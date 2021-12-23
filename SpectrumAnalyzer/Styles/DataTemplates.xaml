@@ -1,0 +1,16 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <DataTemplate x:Key="FirstCell">
+        <StackPanel Orientation="Horizontal">
+            <CheckBox IsChecked="{Binding Path=IsSelected, 
+      RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListViewItem}}}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="ListViewCheckBox">
+        <StackPanel Orientation="Horizontal">
+            <CheckBox IsChecked="{Binding Path=Selected}"/>
+        </StackPanel>
+    </DataTemplate>
+</ResourceDictionary>

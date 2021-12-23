@@ -1,0 +1,16 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Color x:Key="CellHoverFill">#FFF0F8FF</Color>
+    <SolidColorBrush x:Key="CellHoverFillBrush" Color="{StaticResource CellHoverFill}"/>
+
+    <Color x:Key="CellHoverBorder">#87CEFA</Color>
+    <SolidColorBrush x:Key="CellHoverBorderBrush" Color="{StaticResource CellHoverBorder}"/>
+
+    <Color x:Key="CellSelectFill">#FFd7ecff</Color>
+    <SolidColorBrush x:Key="CellSelectFillBrush" Color="{StaticResource CellSelectFill}"/>
+
+    <Color x:Key="CellSelectBorder">#87CEFA</Color>
+    <SolidColorBrush x:Key="CellSelectBorderBrush" Color="{StaticResource CellSelectBorder}"/>
+
+</ResourceDictionary>
