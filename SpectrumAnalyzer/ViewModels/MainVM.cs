@@ -60,7 +60,7 @@ namespace SpectrumAnalyzer.ViewModels
             var fd = new OpenFileDialog()
             {
                 Filter = "Excel files (*.xlsx)|*.xlsx|csv files (*.csv)|*.csv|All files (*.*)|*.*",
-                Multiselect = false,
+                Multiselect = true,
                 CheckPathExists = true,
                 Title = "Load Dataset",
                 AddExtension = true
