@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:SpectrumAnalyzer"
         xmlns:vm="clr-namespace:SpectrumAnalyzer.ViewModels"
         mc:Ignorable="d"
-        Title="Import Options" Height="500" Width="500">
+        Title="Import Data" Height="500" Width="500" WindowStyle="ToolWindow">
 
     <Window.DataContext>
         <vm:DataImportVM/>
@@ -19,14 +19,21 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5" VerticalAlignment="Center">
-            <CheckBox IsChecked="{Binding DataHeaders}" Content="Data headers?" VerticalAlignment="Center"/>
-            <Label Content="| X Data Column:" VerticalAlignment="Center"/>
-            <TextBox Text="{Binding XDataColumn, Mode=TwoWay}" VerticalAlignment="Center"/>
-            <Label Content="| Y Data Column:"/>
-            <TextBox Text="{Binding YDataColumn, Mode=TwoWay}" VerticalAlignment="Center"/>
-            <Label Content="| Sheet:" VerticalAlignment="Center"/>
-            <ComboBox MinWidth="100" ItemsSource="{Binding SpreadSheet.WorkSheetNames}" SelectedItem="{Binding SelectedSheetName}" IsEnabled="{Binding MultipleSheetsExist}" Margin="5,2"></ComboBox>
+        <StackPanel Grid.Row="0" Orientation="Vertical" Margin="5,0,5,5" VerticalAlignment="Center">
+            <Label Content="Options" FontWeight="Bold" />
+            <CheckBox IsChecked="{Binding DataHeaders}" Content="Data headers?" VerticalAlignment="Center" Margin="5"/>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="X Data Column:" VerticalAlignment="Center"/>
+                <TextBox Text="{Binding XDataColumn, Mode=TwoWay}" VerticalAlignment="Center" MinWidth="30" TextAlignment="Center"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Y Data Column:"/>
+                <TextBox Text="{Binding YDataColumn, Mode=TwoWay}" VerticalAlignment="Center" MinWidth="30" TextAlignment="Center"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+            <Label Content="Sheet:" VerticalAlignment="Center"/>
+            <ComboBox MinWidth="200" ItemsSource="{Binding SpreadSheet.WorkSheetNames}" SelectedItem="{Binding SelectedSheetName}" IsEnabled="{Binding MultipleSheetsExist}" Margin="5,2"></ComboBox>
+            </StackPanel>
         </StackPanel>
 
         <DataGrid Grid.Row="1" ItemsSource="{Binding SelectedSheet}"
@@ -42,7 +49,8 @@
                   CanUserResizeRows="False"
                   EnableRowVirtualization="False"
                   Width="Auto"
-                  GridLinesVisibility="All">
+                  GridLinesVisibility="All"
+                  ColumnWidth="Auto">
             
         </DataGrid>
 
@@ -54,8 +62,8 @@
             </Grid.ColumnDefinitions>
             
             <TextBlock Grid.Column="0" Text="{Binding ImportRows, StringFormat=Rows to import: {0}}" VerticalAlignment="Center"/>
-            <Button Grid.Column="1" Content="Import" Margin="5" Padding="20,5"/>
-            <Button Grid.Column="2" Content="Cancel" Margin="5" Padding="20,5"/>
+            <Button Grid.Column="1" Content="Import" Command="{Binding ImportDataCommand, Mode=OneWay}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"  Margin="5" Padding="20,5"/>
+            <Button Grid.Column="2" Content="Cancel" Command="{Binding CloseWindowCommand, Mode=OneWay}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" Margin="5" Padding="20,5"/>
         </Grid>
 
     </Grid>

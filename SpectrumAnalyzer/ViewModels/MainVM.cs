@@ -59,7 +59,7 @@ namespace SpectrumAnalyzer.ViewModels
         {
             var fd = new OpenFileDialog()
             {
-                Filter = "Excel files (*.xlsx)|*.xlsx|All files (*.*)|*.*",
+                Filter = "Excel files (*.xlsx)|*.xlsx|csv files (*.csv)|*.csv|All files (*.*)|*.*",
                 Multiselect = false,
                 CheckPathExists = true,
                 Title = "Load Dataset",
@@ -69,11 +69,22 @@ namespace SpectrumAnalyzer.ViewModels
             if (fd.ShowDialog() == true)
             {
                 var vm = new DataImportVM(new ExcelSpreadSheet(fd.FileName));
+                vm.ImportDataRequest += OnImportData;
 
                 var importWindow = new DataImportWindow();
                 importWindow.DataContext = vm;
                 importWindow.Show();
             }
+        }
+
+        public void OnImportData(object sender, EventArgs e)
+        {
+            var vm = (DataImportVM)sender;
+
+            Data.SetData(new Dataset(vm.SelectedXData, vm.SelectedYData));
+            DataFilePath = vm.SpreadSheet.FilePath;
+
+            vm.ImportDataRequest -= OnImportData;
         }
 
     }

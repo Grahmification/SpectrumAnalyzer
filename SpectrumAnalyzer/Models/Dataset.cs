@@ -24,6 +24,15 @@ namespace SpectrumAnalyzer.Models
             LoadFromCSV(filePath);
         }
 
+        public Dataset(double[] XData, double[] YData)
+        {
+            for(int i = 0; i < XData.Length; i++)
+            {
+                RawData.Add(new Datapoint(XData[i], YData[i]));
+            }
+
+            ZeroNormalizeXValues();
+        }
 
         public void ComputePolyFit(int order)
         {
@@ -74,14 +83,7 @@ namespace SpectrumAnalyzer.Models
                     RawData.Add(new Datapoint(double.Parse(line[0]), double.Parse(line[1])));
                 }
 
-                var XOffset = RawData[0].X;
-
-                for (int i = 0; i < RawData.Count; i++)
-                {
-                    RawData[i].X -= XOffset;
-                }
-                    
-
+                ZeroNormalizeXValues();
             }
         }
 
@@ -97,6 +99,15 @@ namespace SpectrumAnalyzer.Models
             }
 
             return inputData;
+        }
+        private void ZeroNormalizeXValues()
+        {
+            var XOffset = RawData[0].X;
+
+            for (int i = 0; i < RawData.Count; i++)
+            {
+                RawData[i].X -= XOffset;
+            }
         }
     }
 }

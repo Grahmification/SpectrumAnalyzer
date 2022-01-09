@@ -14,32 +14,35 @@ namespace SpectrumAnalyzer.Models
         public Dictionary<string, DataTable> WorkSheets { get; private set; } = new Dictionary<string, DataTable>();
         public List<string> WorkSheetNames { get { return WorkSheets.Keys.ToList(); } }
 
+        public string FilePath { get; private set; } = "";
+
         public ExcelSpreadSheet(string filePath)
         {
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
             using (var stream = File.Open(filePath, FileMode.Open, FileAccess.Read))
             {
-                // Auto-detect format, supports:
-                //  - Binary Excel files (2.0-2003 format; *.xls)
-                //  - OpenXml Excel files (2007 format; *.xlsx, *.xlsb)
-                using (var reader = ExcelReaderFactory.CreateReader(stream))
+                //check if file is csv
+                if(filePath.Split(".").LastOrDefault() == "csv")
                 {
-                    //// reader.IsFirstRowAsColumnNames
-                    var conf = new ExcelDataSetConfiguration
+                    using (var reader = ExcelReaderFactory.CreateCsvReader(stream))
                     {
-                        ConfigureDataTable = _ => new ExcelDataTableConfiguration
-                        {
-                            UseHeaderRow = false
-                        }
-                    };
-
-                    var result = reader.AsDataSet(conf);
-
-                    foreach(DataTable table in result.Tables)
-                        WorkSheets.Add(table.TableName, table);
+                        PrepareData(reader);
+                    }
+                }
+                else
+                {
+                    // Auto-detect format, supports:
+                    //  - Binary Excel files (2.0-2003 format; *.xls)
+                    //  - OpenXml Excel files (2007 format; *.xlsx, *.xlsb)
+                    using (var reader = ExcelReaderFactory.CreateReader(stream))
+                    {
+                        PrepareData(reader);
+                    }
                 }
             }
+
+            FilePath = filePath;
         }
 
         /// <summary>
@@ -57,6 +60,24 @@ namespace SpectrumAnalyzer.Models
             var row = int.Parse(match.Groups["row"].ToString());
 
             return workSheet.Rows[row-1][col-1].ToString();
+        }
+
+
+        private void PrepareData(IExcelDataReader reader)
+        {
+            //// reader.IsFirstRowAsColumnNames
+            var conf = new ExcelDataSetConfiguration
+            {
+                ConfigureDataTable = _ => new ExcelDataTableConfiguration
+                {
+                    UseHeaderRow = false
+                }
+            };
+
+            var result = reader.AsDataSet(conf);
+
+            foreach (DataTable table in result.Tables)
+                WorkSheets.Add(table.TableName, table);
         }
 
     }
