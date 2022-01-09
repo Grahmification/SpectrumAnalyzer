@@ -9,20 +9,12 @@ namespace SpectrumAnalyzer.ViewModels
 {
     public class MainVM : ObservableObject
     {     
-        public DataVM Data { get; private set; }
-
-        public string DataFilePath { get; set; } = "";
+        public DataPlotVM Data { get; private set; }
 
         /// <summary>
         /// RelayCommand for <see cref="LoadData"/>
         /// </summary>
         public ICommand LoadDataCommand { get; private set; }
-
-        /// <summary>
-        /// RelayCommand for <see cref="LoadExcel"/>
-        /// </summary>
-        public ICommand LoadExcelCommand { get; private set; }
-
 
         public MainVM()
         {
@@ -31,31 +23,12 @@ namespace SpectrumAnalyzer.ViewModels
 
         private void InitializeVMs()
         {
-            Data = new DataVM();
+            Data = new DataPlotVM();
 
             LoadDataCommand = new RelayCommand<object>(LoadData);
-            LoadExcelCommand = new RelayCommand<object>(LoadExcel);
         }
 
         public void LoadData(object parameter)
-        {
-            var fd = new OpenFileDialog()
-            {
-                Filter = "csv files (*.csv)|*.csv|All files (*.*)|*.*",
-                Multiselect = false,
-                CheckPathExists = true,
-                Title = "Load Dataset",
-                AddExtension = true
-            };
-
-            if (fd.ShowDialog() == true)
-            {              
-                Data.SetData(new Dataset(fd.FileName));
-                DataFilePath = fd.FileName;
-            }
-        }
-
-        public void LoadExcel(object parameter)
         {
             var fd = new OpenFileDialog()
             {
@@ -68,7 +41,7 @@ namespace SpectrumAnalyzer.ViewModels
 
             if (fd.ShowDialog() == true)
             {
-                var vm = new DataImportVM(new ExcelSpreadSheet(fd.FileName));
+                var vm = new DataImportVM(new SpreadSheet(fd.FileName));
                 vm.ImportDataRequest += OnImportData;
 
                 var importWindow = new DataImportWindow();
@@ -81,9 +54,7 @@ namespace SpectrumAnalyzer.ViewModels
         {
             var vm = (DataImportVM)sender;
 
-            Data.SetData(new Dataset(vm.SelectedXData, vm.SelectedYData));
-            DataFilePath = vm.SpreadSheet.FilePath;
-
+            Data.SetData(new Dataset(vm.SelectedXData, vm.SelectedYData, vm.SpreadSheet.FilePath));
             vm.ImportDataRequest -= OnImportData;
         }
 

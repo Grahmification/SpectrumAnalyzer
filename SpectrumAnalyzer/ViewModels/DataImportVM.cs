@@ -13,7 +13,7 @@ namespace SpectrumAnalyzer.ViewModels
     {
 
 
-        public ExcelSpreadSheet SpreadSheet { get; private set; }
+        public SpreadSheet SpreadSheet { get; private set; }
         public string SelectedSheetName { get; set; } = "";
         public DataTable SelectedSheet
         {
@@ -49,7 +49,7 @@ namespace SpectrumAnalyzer.ViewModels
         public ICommand CloseWindowCommand { get; private set; }
 
 
-        public DataImportVM(ExcelSpreadSheet spreadsheet)
+        public DataImportVM(SpreadSheet spreadsheet)
         {          
             SpreadSheet = spreadsheet;
             SelectedSheetName = SpreadSheet.WorkSheetNames.FirstOrDefault();

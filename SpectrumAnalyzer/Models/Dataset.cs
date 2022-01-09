@@ -18,14 +18,12 @@ namespace SpectrumAnalyzer.Models
         public double MaxPeriod { get { return 1.0/FFT.MinFrequency(ConvertData(RawData)); } }
         public double MinPeriod { get { return 1.0/FFT.MaxFrequency(ConvertData(RawData)); } }
 
+        public string FilePath { get; set; } = "";
 
-        public Dataset(string filePath)
+        public Dataset(double[] XData, double[] YData, string filePath)
         {
-            LoadFromCSV(filePath);
-        }
-
-        public Dataset(double[] XData, double[] YData)
-        {
+            FilePath = filePath;
+            
             for(int i = 0; i < XData.Length; i++)
             {
                 RawData.Add(new Datapoint(XData[i], YData[i]));

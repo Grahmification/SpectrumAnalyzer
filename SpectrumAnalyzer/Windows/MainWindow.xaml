@@ -22,23 +22,19 @@
 
         <StackPanel Grid.Row="0"  Orientation="Horizontal" Background="LightGray">
             <Button Content="Load Dataset" Command="{Binding LoadDataCommand}" Margin="2" />
-            <Button Content="Load Excel" Command="{Binding LoadExcelCommand}" Margin="2" />
         </StackPanel>
 
         <TabControl Grid.Row="1" TabStripPlacement="Top">
-            <TabItem Header="Data">
+            <TabItem Header="Data Configuration">
                 <UserControls:DataControl DataContext="{Binding Data}"/>
             </TabItem>
-            <TabItem Header="FFT">
-                <UserControls:SpectrumControl DataContext="{Binding Data.Spectrum}"/>
-            </TabItem>
-            <TabItem Header="Reconstruction">
-                <UserControls:ReconstructionControl DataContext="{Binding Data.Reconstruction}"/>
+            <TabItem Header="FFT Analysis">
+                <UserControls:FFTControl DataContext="{Binding Data.FFT}"/>
             </TabItem>
         </TabControl>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Background="LightGray">
-            <TextBlock Margin="5,2,5,2" VerticalAlignment="Center" Text="{Binding DataFilePath}"/>
+            <TextBlock Margin="5,2,5,2" VerticalAlignment="Center" Text="{Binding Data.Data.FilePath}"/>
         </StackPanel>
 
     </Grid>
