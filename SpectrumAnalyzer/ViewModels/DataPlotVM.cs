@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Text;
-using System.Windows.Controls;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
@@ -16,17 +13,17 @@ namespace SpectrumAnalyzer.ViewModels
     {
         public PlotModelManaged DataPlotModel { get; set; }
         public Dataset Data { get; set; } = null;
+        public List<Datapoint> FFTInputData { get { return EnableFit ? Data.NormalizedData : Data.RawData; } }
         public int PolyFitOrder { get; set; } = 3;
         public bool EnableFit
         { 
             get { return _enableFit;  }
             set { SetEnableDataFit(value);  }
         }
-        public string DataPlotTitle { get { return Units.FormattedPlotTitle("Data"); } }
-
-        public double[] PolyCoefs { get; private set; } = new double[] { };
 
         private bool _enableFit = true;
+        public string DataPlotTitle { get { return Units.FormattedPlotTitle("Data"); } }
+        public double[] PolyCoefs { get; private set; } = new double[] { };
 
         public UnitsVM Units { get; set; } = new UnitsVM();
         public FFTVM FFT { get; private set; } = new FFTVM();
@@ -113,7 +110,7 @@ namespace SpectrumAnalyzer.ViewModels
             DataPlotModel.ResetAllAxes();
             DataPlotModel.InvalidatePlot(true);
 
-            ComputePolyFit(null);  
+            ComputePolyFit(null);
         }
         public void ComputePolyFit(object parameter)
         {
@@ -126,17 +123,9 @@ namespace SpectrumAnalyzer.ViewModels
         }  
         public void ComputeFFT(object parameter)
         {
-            if(EnableFit)
-            {
-                Data.ComputeFFT(Data.NormalizedData);
-            }
-            else
-            {
-                Data.ComputeFFT(Data.RawData);
-            }
-
+            Data.ComputeFFT(FFTInputData);
             FFT.PopulateComponents(Data.FFTData.Values);
-            SetReconstructionDataset();
+            FFT.PopulateDataSet(FFTInputData);
         }
 
         public void SetEnableDataFit(bool enable)
@@ -150,18 +139,6 @@ namespace SpectrumAnalyzer.ViewModels
         public bool isDataNotNull()
         {
             return !(Data == null);
-        }
-
-        public void SetReconstructionDataset()
-        {
-            if (EnableFit)
-            {
-                FFT.PopulateDataSet(Data.NormalizedData);
-            }
-            else
-            {
-                FFT.PopulateDataSet(Data.RawData);
-            }
         }
 
         public void OnUnitsUpdate(object sender, EventArgs e)
