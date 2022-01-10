@@ -1,5 +1,7 @@
 ﻿using SpectrumAnalyzer.Models;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
 
@@ -13,19 +15,24 @@ namespace SpectrumAnalyzer.ViewModels
         public DatapointCollection FFTInputData { get { return EnableFit ? NormalizedData : RawData; } }
 
         public CompositeXYFunction FitCurve { get; private set; } = new CompositeXYFunction();
-        public bool EnableFit { get; set; } = true;
-
+        public bool EnableFit
+        {
+            get { return _enableFit; }
+            set { _enableFit = value; FitEnableChanged?.Invoke(this, _enableFit); }
+        }
+        private bool _enableFit = true;
         public PolyFitVM PolyFit { get; private set; } = new PolyFitVM();
 
-        
-
-        public double MinFrequency { get { return FFT.MinFrequency(RawData.GetFFTDataFormat()); } }
-        public double MaxFrequency { get { return FFT.MaxFrequency(RawData.GetFFTDataFormat()); } }
-        public double MaxPeriod { get { return 1.0 / FFT.MinFrequency(RawData.GetFFTDataFormat()); } }
-        public double MinPeriod { get { return 1.0 / FFT.MaxFrequency(RawData.GetFFTDataFormat()); } }
-
+        public double MinFrequency { get { return DataExists() ? FFT.MinFrequency(RawData.GetFFTDataFormat()) : 0; } }
+        public double MaxFrequency { get { return DataExists() ? FFT.MaxFrequency(RawData.GetFFTDataFormat()) : 0; } }
+        public double MaxPeriod { get { return DataExists() ? 1.0 / FFT.MinFrequency(RawData.GetFFTDataFormat()) : 0; } }
+        public double MinPeriod { get { return DataExists() ? 1.0 / FFT.MaxFrequency(RawData.GetFFTDataFormat()) : 0; } }
 
         public Dictionary<double, SignalComponent> FFTData { get; private set; } = new Dictionary<double, SignalComponent>();
+
+        public event EventHandler FitCompleted;
+        public event EventHandler FFTCompleted;
+        public event EventHandler<bool> FitEnableChanged;
 
         /// <summary>
         /// RelayCommand for <see cref="ComputeFFT"/>
@@ -36,7 +43,6 @@ namespace SpectrumAnalyzer.ViewModels
         /// RelayCommand for <see cref="ComputeFit"/>
         /// </summary>
         public ICommand ComputeFitCommand { get; private set; }
-
 
         public DataVM()
         {
@@ -54,6 +60,11 @@ namespace SpectrumAnalyzer.ViewModels
             }
 
             RawData.ZeroNormalizeXValues();
+
+            OnPropertyChanged("MinFrequency");
+            OnPropertyChanged("MaxFrequency");
+            OnPropertyChanged("MinPeriod");
+            OnPropertyChanged("MaxPeriod");
         }
         public void ComputeFit(object parameter)
         {
@@ -62,8 +73,10 @@ namespace SpectrumAnalyzer.ViewModels
             FitCurve = new CompositeXYFunction();
             FitCurve.Curves.Add(PolyFit.PolyFunction);
             
-            FitCurveData = (DatapointCollection)FitCurve.ComputeFunction(RawData);
-            NormalizedData = (DatapointCollection)DatapointCollection.YValueMultisetOperation(RawData, FitCurveData, (a, b) => a - b);
+            FitCurveData.SetData(FitCurve.ComputeFunction(RawData));
+            NormalizedData.SetData(DatapointCollection.YValueMultisetOperation(RawData, FitCurveData, (a, b) => a - b));
+
+            FitCompleted?.Invoke(this, new EventArgs());
         }
         public void ComputeFFT(object parameter)
         {
@@ -73,11 +86,12 @@ namespace SpectrumAnalyzer.ViewModels
 
             foreach (SignalComponent component in FFToutput)
                 FFTData.Add(component.Frequency, component);
+
+            FFTCompleted?.Invoke(this, new EventArgs());
         }
         public bool DataExists()
         {
             return RawData.Count > 0;
         }
-
     }
 }

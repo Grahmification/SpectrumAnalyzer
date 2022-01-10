@@ -11,8 +11,8 @@ namespace SpectrumAnalyzer.ViewModels
 {
     public class FFTVM : ObservableObject
     {
-        public ObservableCollection<Datapoint> Dataset { get; set; } = new ObservableCollection<Datapoint>();
-        public ObservableCollection<SignalReconstruction> Reconstructions { get; set; } = new ObservableCollection<SignalReconstruction>();
+        public DatapointCollection Dataset { get; set; } = new DatapointCollection();
+        public ObservableCollection<SignalReconstructionVM> Reconstructions { get; set; } = new ObservableCollection<SignalReconstructionVM>();
         public string NewReconstructionName { get; set; } = "Reconstruction 1";
         public ObservableCollection<SignalComponent> SignalComponents { get; set; } = new ObservableCollection<SignalComponent>();
         public SelectedItemCollection<SignalComponent> SelectedComponents { get; set; } = new SelectedItemCollection<SignalComponent>();
@@ -197,8 +197,8 @@ namespace SpectrumAnalyzer.ViewModels
 
         public void AddReconstruction(object parameter)
         {
-            var recon = new SignalReconstruction(new List<SignalComponent>(SelectedComponents), NewReconstructionName);
-            recon.PopulatePoints((List<double>)Datapoint.XValues(Dataset));
+            var recon = new SignalReconstructionVM(new List<SignalComponent>(SelectedComponents), NewReconstructionName);
+            recon.PopulatePoints((List<double>)Dataset.XValues);
 
             Reconstructions.Add(recon);
             NewReconstructionName = string.Format("Reconstruction {0}", Reconstructions.Count + 1);
@@ -290,7 +290,6 @@ namespace SpectrumAnalyzer.ViewModels
             ReconstructionPlot.GetAxis(PlotModelManaged.XAxisPrimaryKey).Title = Units.XAxisTitle;
             ReconstructionPlot.GetAxis(PlotModelManaged.YAxisPrimaryKey).Title = Units.YAxisTitle;
             ReconstructionPlot.InvalidatePlot(false);
-
         }
 
     }

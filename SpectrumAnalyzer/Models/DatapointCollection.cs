@@ -10,6 +10,16 @@ namespace SpectrumAnalyzer.Models
         public IList<double> XValues { get { return Items.Select(c => c.X).ToList(); } }
         public IList<double> YValues { get { return Items.Select(c => c.Y).ToList(); } }
 
+        public DatapointCollection() { }
+        public void SetData(ICollection<Datapoint> dataset)
+        {
+            Items.Clear();
+            
+            foreach (Datapoint p in dataset)
+                Items.Add(p);
+        }
+
+
         public void XValueOperation(Func<double, double> operation)
         {
             for (int i = 0; i < Items.Count; i++)
@@ -26,7 +36,8 @@ namespace SpectrumAnalyzer.Models
         }
         public void ZeroNormalizeXValues()
         {
-            XValueOperation(x => x - Items[0].X);         
+            double XOffset = Items[0].X;
+            XValueOperation(x => x - XOffset);         
         }
 
 

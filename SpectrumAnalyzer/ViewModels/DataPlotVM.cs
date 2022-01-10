@@ -1,55 +1,31 @@
 ﻿using System;
-using System.Collections.Generic;
 using OxyPlot;
-using OxyPlot.Axes;
 using OxyPlot.Series;
-using OxyPlot.Legends;
 using SpectrumAnalyzer.Models;
-using System.Windows.Input;
 
 namespace SpectrumAnalyzer.ViewModels
 {
     public class DataPlotVM : ObservableObject
     {
-        public PlotModelManaged DataPlotModel { get; set; }
-        public Dataset Data { get; set; } = null;
-        public List<Datapoint> FFTInputData { get { return EnableFit ? Data.NormalizedData : Data.RawData; } }
-        public int PolyFitOrder { get; set; } = 3;
-        public bool EnableFit
-        { 
-            get { return _enableFit;  }
-            set { SetEnableDataFit(value);  }
-        }
-
-        private bool _enableFit = true;
+        public PlotModelManaged DataPlotModel { get; set; }      
         public string DataPlotTitle { get { return Units.FormattedPlotTitle("Data"); } }
-        public double[] PolyCoefs { get; private set; } = new double[] { };
 
+        public DataVM Data { get; private set; } = new DataVM();
         public UnitsVM Units { get; set; } = new UnitsVM();
         public FFTVM FFT { get; private set; } = new FFTVM();
 
-
-        /// <summary>
-        /// RelayCommand for <see cref="ComputeFFT"/>
-        /// </summary>
-        public ICommand ComputeFFTCommand { get; private set; }
-
-        /// <summary>
-        /// RelayCommand for <see cref="ComputePolyFit"/>
-        /// </summary>
-        public ICommand ComputePolyFitCommand { get; private set; }
-
         public DataPlotVM()
         {
-            ComputeFFTCommand = new RelayCommand<object>(ComputeFFT, isDataNotNull);
-            ComputePolyFitCommand = new RelayCommand<object>(ComputePolyFit, isDataNotNull);
+            Units.OnUnitsUpdate += OnUnitsUpdate;
+            Data.FitCompleted += onFitCompleted;
+            Data.FFTCompleted += onFFTCompleted;
+            Data.FitEnableChanged += onEnableDataFitChanged;
+
             SetupPlot();
             SetupSeries();
 
-            Units = new UnitsVM();
-            Units.OnUnitsUpdate += OnUnitsUpdate;
-
             FFT.SetUnits(Units);
+            Units.UpdateUnits(null);
         }
         private void SetupPlot()
         {
@@ -70,11 +46,14 @@ namespace SpectrumAnalyzer.ViewModels
         }
         private void SetupSeries()
         {
+            //https://github.com/ylatuya/oxyplot/blob/master/Source/Examples/ExampleLibrary/Examples/ItemsSourceExamples.cs
+
             var rawDataSeries = new LineSeries()
             {
                 LineStyle = LineStyle.Solid,
                 MarkerType = MarkerType.Circle,
                 Title = "Raw Data",
+                ItemsSource = Data.RawData,
             };
 
             var fitLineSeries = new LineSeries()
@@ -82,13 +61,15 @@ namespace SpectrumAnalyzer.ViewModels
                 LineStyle = LineStyle.Dash,
                 MarkerType = MarkerType.None,
                 Title = "Polynomial Fit",
+                ItemsSource = Data.FitCurveData,
             };
 
             var normalizedDataSeries = new LineSeries()
             {
                 LineStyle = LineStyle.Solid,
                 MarkerType = MarkerType.Diamond,
-                Title = "Normalized Data"
+                Title = "Normalized Data",
+                ItemsSource = Data.NormalizedData,
             };
 
             DataPlotModel.AddSeries(rawDataSeries, PlotSeriesTag.RawData);
@@ -96,51 +77,35 @@ namespace SpectrumAnalyzer.ViewModels
             DataPlotModel.AddSeries(normalizedDataSeries, PlotSeriesTag.NormalizedData);
         }
 
-        public void SetData(Models.Dataset data)
+        public void SetData(double[] XData, double[] YData, string dataTitle)
         {
-            Data = data;
-
-            //https://github.com/ylatuya/oxyplot/blob/master/Source/Examples/ExampleLibrary/Examples/ItemsSourceExamples.cs
-            LineSeries dataline = (LineSeries)DataPlotModel.PlotSeries[PlotSeriesTag.RawData];
-            dataline.ItemsSource = Data.RawData;
+            Data.SetData(XData, YData);
 
             DataPlotModel.SetSeriesVisibility(PlotSeriesTag.RawData, true);
-
-
             DataPlotModel.ResetAllAxes();
             DataPlotModel.InvalidatePlot(true);
 
-            ComputePolyFit(null);
-        }
-        public void ComputePolyFit(object parameter)
-        {
-            Data.ComputePolyFit(PolyFitOrder);
+            Data.ComputeFit(null);
 
-            DataPlotModel.UpdateLineSeriesData(PlotSeriesTag.FitLine, Data.PolyFitCurve.CurvePoints);
-            DataPlotModel.UpdateLineSeriesData(PlotSeriesTag.NormalizedData, Data.NormalizedData);     
-            DataPlotModel.InvalidatePlot(true);
-            PolyCoefs = Data.PolyFit.Coefficients;
+            Units.PlotTitle = dataTitle;
+            Units.UpdateUnits(null);
+        }
+
+        public void onFitCompleted(object sender, EventArgs e)
+        {
+            onEnableDataFitChanged(this, Data.EnableFit);
         }  
-        public void ComputeFFT(object parameter)
+        public void onFFTCompleted(object sender, EventArgs e)
         {
-            Data.ComputeFFT(FFTInputData);
             FFT.PopulateComponents(Data.FFTData.Values);
-            FFT.PopulateDataSet(FFTInputData);
+            FFT.PopulateDataSet(Data.FFTInputData);
         }
-
-        public void SetEnableDataFit(bool enable)
+        public void onEnableDataFitChanged(object sender, bool enable)
         {
-            _enableFit = enable;
             DataPlotModel.SetSeriesVisibility(PlotSeriesTag.FitLine, enable);
             DataPlotModel.SetSeriesVisibility(PlotSeriesTag.NormalizedData, enable);
             DataPlotModel.InvalidatePlot(true);
         }
-
-        public bool isDataNotNull()
-        {
-            return !(Data == null);
-        }
-
         public void OnUnitsUpdate(object sender, EventArgs e)
         {
             DataPlotModel.Title = DataPlotTitle;

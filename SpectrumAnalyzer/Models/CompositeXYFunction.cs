@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace SpectrumAnalyzer.Models
 {
@@ -11,13 +12,8 @@ namespace SpectrumAnalyzer.Models
             Curves = new List<IXYFunction>();
         }
         public double GetYValue(double xValue)
-        {
-            double yValue = 0;
-
-            foreach (IXYFunction curve in Curves)
-                yValue += curve.GetYValue(xValue);
-
-            return yValue;
+        { 
+            return Curves.Sum(s => s.GetYValue(xValue));
         }
         public ICollection<Datapoint> ComputeFunction(double[] xValues)
         {

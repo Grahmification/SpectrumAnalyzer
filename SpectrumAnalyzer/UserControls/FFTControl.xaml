@@ -124,12 +124,10 @@
                 <DataGrid Grid.Row="2" Name="ReconstructionDG" Margin="5" Background="White" 
                               ItemsSource="{Binding Reconstructions}"
                               AlternationCount="{Binding SignalComponents.Count}"
-                              
                               Style="{StaticResource BlueDG}">
-
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Name" Binding="{Binding Name}" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="Components" Binding="{Binding Components.Count}" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Components" Binding="{Binding Function.Curves.Count}" IsReadOnly="True"/>
                     </DataGrid.Columns>
                 </DataGrid>
 

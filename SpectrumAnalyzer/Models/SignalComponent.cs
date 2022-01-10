@@ -70,7 +70,7 @@ namespace SpectrumAnalyzer.Models
             ContributionFraction = Magnitude / totalMagnitude;
         }
 
-        public static double ComputeTotalMagnitude(List<SignalComponent> components)
+        public static double ComputeTotalMagnitude(IList<SignalComponent> components)
         {
             return components.Sum(s => s.Magnitude);
         }

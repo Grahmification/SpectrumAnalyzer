@@ -34,7 +34,7 @@
         </TabControl>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Background="LightGray">
-            <TextBlock Margin="5,2,5,2" VerticalAlignment="Center" Text="{Binding Data.Data.FilePath}"/>
+            <TextBlock Margin="5,2,5,2" VerticalAlignment="Center" Text="{Binding DataFilePath}"/>
         </StackPanel>
 
     </Grid>

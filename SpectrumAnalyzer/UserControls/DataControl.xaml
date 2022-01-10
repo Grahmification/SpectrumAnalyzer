@@ -71,7 +71,7 @@
                         <Expander.Header>
                             <DockPanel VerticalAlignment="Stretch">
                                 <TextBlock Text="Data Detrending" VerticalAlignment="Center"/>
-                                <CheckBox IsChecked="{Binding EnableFit}" Margin ="5" VerticalAlignment="Center"/>
+                                <CheckBox IsChecked="{Binding Data.EnableFit}" Margin ="5" VerticalAlignment="Center"/>
                             </DockPanel>
                         </Expander.Header>
 
@@ -85,10 +85,10 @@
                             </Grid.RowDefinitions>
                             
                             <TextBlock Grid.Row="0" Text="Polynomial Order:"/>
-                            <TextBox Grid.Row="1" Text="{Binding PolyFitOrder}" PreviewTextInput="NumberValidationTextBox"></TextBox>
-                            <Button Grid.Row="2" Content="Auto fit" Command="{Binding ComputePolyFitCommand}" Margin="3"/>
+                            <TextBox Grid.Row="1" Text="{Binding Data.PolyFit.PolyFitOrder}" PreviewTextInput="NumberValidationTextBox"></TextBox>
+                            <Button Grid.Row="2" Content="Auto fit" Command="{Binding Data.ComputeFitCommand}" Margin="3"/>
                             <TextBlock Grid.Row="3" Text="Components:" VerticalAlignment="Center"/>
-                            <ListBox Grid.Row="4" ItemsSource="{Binding PolyCoefs, Mode=OneWay}" AlternationCount="{Binding Path=PolyCoefs.Length}" HorizontalContentAlignment="Stretch" ClipToBounds="True">
+                            <ListBox Grid.Row="4" ItemsSource="{Binding Data.PolyFit.PolyCoefs, Mode=OneWay}" AlternationCount="{Binding Path=Data.PolyFit.PolyCoefs.Length}" HorizontalContentAlignment="Stretch" ClipToBounds="True">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <Grid Margin="0,2">
@@ -110,7 +110,7 @@
             <Border Grid.Row="3" BorderBrush="Black" Background="LightGray" BorderThickness="1" Margin="2">
                 <StackPanel Margin="5">
                     <Label Content="Compute" FontWeight="Bold" FontSize="12" Padding="-5"/>
-                    <Button Content="Compute FFT" Command="{Binding ComputeFFTCommand}" Padding="5" Margin="5"/>
+                    <Button Content="Compute FFT" Command="{Binding Data.ComputeFFTCommand}" Padding="5" Margin="5"/>
                 </StackPanel>
             </Border>
 
