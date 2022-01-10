@@ -88,7 +88,7 @@ namespace SpectrumAnalyzer.ViewModels
             Data.ComputeFit(null);
 
             Units.PlotTitle = dataTitle;
-            Units.UpdateUnits(null);
+            Units.UpdateUnits(null);      
         }
 
         public void onFitCompleted(object sender, EventArgs e)
@@ -97,6 +97,7 @@ namespace SpectrumAnalyzer.ViewModels
         }  
         public void onFFTCompleted(object sender, EventArgs e)
         {
+            FFT = new FFTVM();
             FFT.PopulateComponents(Data.FFTData.Values);
             FFT.PopulateDataSet(Data.FFTInputData);
         }

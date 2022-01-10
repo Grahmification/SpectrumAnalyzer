@@ -9,6 +9,7 @@ namespace SpectrumAnalyzer.ViewModels
         public DatapointCollection Points { get; private set; } = new DatapointCollection();
         public string Name { get; set; } = "";
 
+        public SignalReconstructionVM() { }
         public SignalReconstructionVM(IList<SignalComponent> components, string name = "")
         {
             Name = name;

@@ -1,7 +1,6 @@
 ﻿using SpectrumAnalyzer.Models;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
 
@@ -20,7 +19,7 @@ namespace SpectrumAnalyzer.ViewModels
             get { return _enableFit; }
             set { _enableFit = value; FitEnableChanged?.Invoke(this, _enableFit); }
         }
-        private bool _enableFit = true;
+        private bool _enableFit = false;
         public PolyFitVM PolyFit { get; private set; } = new PolyFitVM();
 
         public double MinFrequency { get { return DataExists() ? FFT.MinFrequency(RawData.GetFFTDataFormat()) : 0; } }

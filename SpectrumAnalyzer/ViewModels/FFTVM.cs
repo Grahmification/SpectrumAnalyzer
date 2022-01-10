@@ -13,6 +13,8 @@ namespace SpectrumAnalyzer.ViewModels
     {
         public DatapointCollection Dataset { get; set; } = new DatapointCollection();
         public ObservableCollection<SignalReconstructionVM> Reconstructions { get; set; } = new ObservableCollection<SignalReconstructionVM>();
+        public SignalReconstructionVM SelectedReconstruction { get; private set; } = new SignalReconstructionVM();
+
         public string NewReconstructionName { get; set; } = "Reconstruction 1";
         public ObservableCollection<SignalComponent> SignalComponents { get; set; } = new ObservableCollection<SignalComponent>();
         public SelectedItemCollection<SignalComponent> SelectedComponents { get; set; } = new SelectedItemCollection<SignalComponent>();
@@ -139,13 +141,11 @@ namespace SpectrumAnalyzer.ViewModels
             ReconstructionPlot.AddSeries(DataSeries, PlotSeriesTag.RawData);
             ReconstructionPlot.AddSeries(fitLineSeries, PlotSeriesTag.FitLine);
         }
-
         public void SetUnits(UnitsVM units)
         {
             Units = units;
             Units.OnUnitsUpdate += OnUnitsUpdate;
         }
-
         public void PopulateDataSet(IEnumerable<Datapoint> dataset)
         {
             Dataset.Clear();
@@ -226,6 +226,8 @@ namespace SpectrumAnalyzer.ViewModels
         {
             if (SelectedComponents.Count > 0)
             {
+                //-------- Plot Selected Points ---------------------
+                
                 var freqData = new List<Datapoint>();
                 var periodData = new List<Datapoint>();
 
@@ -240,28 +242,12 @@ namespace SpectrumAnalyzer.ViewModels
 
                 PeriodSpectrumPlot.UpdateLineSeriesData(PlotSeriesTag.FFTSpectrumHighlight, periodData);
                 PeriodSpectrumPlot.SetSeriesVisibility(PlotSeriesTag.FFTSpectrumHighlight, true);
+     
+                //------------ Plot Reconstruction From Selected Components ---------------------
 
-                LineSeries fitline = (LineSeries)ReconstructionPlot.PlotSeries[PlotSeriesTag.FitLine];
-
-                if (fitline.Points.Count == 0)
-                {
-                    foreach (Datapoint point in Dataset)
-                    {
-                        fitline.Points.Add(new DataPoint(point.X, 0));
-                    }
-                }
-
-                //fitline.ItemsSource = Dataset;
-                //fitline.DataFieldX = "X";
-                //fitline.DataFieldY = "Y";
-
-                for (int i = 0; i < fitline.Points.Count; i++)
-                {
-                    var point = fitline.Points[i];
-                    double yVal = SignalComponent.ComputeYValueSum(SelectedComponents, point.X);
-                    fitline.Points[i] = new DataPoint(point.X, yVal);
-                }
-
+                SelectedReconstruction = new SignalReconstructionVM(SelectedComponents);
+                SelectedReconstruction.PopulatePoints((List<double>)Dataset.XValues);
+                ((LineSeries)ReconstructionPlot.PlotSeries[PlotSeriesTag.FitLine]).ItemsSource = SelectedReconstruction.Points;
                 ReconstructionPlot.SetSeriesVisibility(PlotSeriesTag.FitLine, true);
             }
             else
