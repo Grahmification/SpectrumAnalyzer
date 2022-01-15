@@ -7,6 +7,7 @@
              xmlns:vm="clr-namespace:SpectrumAnalyzer.ViewModels"
              xmlns:oxy="http://oxyplot.org/wpf"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:ext="clr-namespace:SpectrumAnalyzer.Extensions"
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="800">
 
@@ -137,6 +138,7 @@
                     <Label Grid.Row="0"  Content="Data" FontWeight="Bold" FontSize="12" Padding="-5"/>
                     <DataGrid Grid.Row="1" ItemsSource="{Binding Data.RawData}"
                               Style="{StaticResource BlueDG}"
+                              ext:MultiSelector.SelectedItems ="{Binding Data.SelectedData}"
                               Width="Auto">
                         <DataGrid.Columns>
                             <DataGridTextColumn Width="*" Binding="{Binding X, StringFormat={}{0:0.000}}" IsReadOnly="False">

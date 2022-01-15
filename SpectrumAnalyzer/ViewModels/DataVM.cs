@@ -8,6 +8,7 @@ namespace SpectrumAnalyzer.ViewModels
 {
     public class DataVM : ObservableObject
     {
+        public SelectedItemCollection<Datapoint> SelectedData { get; set; } = new SelectedItemCollection<Datapoint>();
         public DatapointCollection RawData { get; private set; } = new DatapointCollection();
         public DatapointCollection FitCurveData { get; private set; } = new DatapointCollection();
         public DatapointCollection NormalizedData { get; private set; } = new DatapointCollection();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using OxyPlot;
 using OxyPlot.Series;
 using SpectrumAnalyzer.Models;
@@ -20,6 +21,7 @@ namespace SpectrumAnalyzer.ViewModels
             Data.FitCompleted += onFitCompleted;
             Data.FFTCompleted += onFFTCompleted;
             Data.FitEnableChanged += onEnableDataFitChanged;
+            Data.SelectedData.CollectionChanged += OnDataSelected;
 
             SetupPlot();
             SetupSeries();
@@ -72,9 +74,22 @@ namespace SpectrumAnalyzer.ViewModels
                 ItemsSource = Data.NormalizedData,
             };
 
+            var dataHightlightSerires = new LineSeries()
+            {
+                LineStyle = LineStyle.None,
+                MarkerType = MarkerType.Circle,
+                Title = "Selected Point",
+                YAxisKey = "Primary Y",
+                CanTrackerInterpolatePoints = false,
+                Color = OxyColors.Red,
+                MarkerSize = 5,
+                ItemsSource = Data.SelectedData
+            };
+
             DataPlotModel.AddSeries(rawDataSeries, PlotSeriesTag.RawData);
             DataPlotModel.AddSeries(fitLineSeries, PlotSeriesTag.FitLine);
             DataPlotModel.AddSeries(normalizedDataSeries, PlotSeriesTag.NormalizedData);
+            DataPlotModel.AddSeries(dataHightlightSerires, PlotSeriesTag.SelectedSeries);
         }
 
         public void SetData(double[] XData, double[] YData, string dataTitle)
@@ -88,7 +103,7 @@ namespace SpectrumAnalyzer.ViewModels
             Data.ComputeFit(null);
 
             Units.PlotTitle = dataTitle;
-            Units.UpdateUnits(null);      
+            Units.UpdateUnits(null);     
         }
 
         public void onFitCompleted(object sender, EventArgs e)
@@ -100,6 +115,7 @@ namespace SpectrumAnalyzer.ViewModels
             FFT = new FFTVM();
             FFT.PopulateComponents(Data.FFTData.Values);
             FFT.PopulateDataSet(Data.FFTInputData);
+            FFT.SetUnits(Units);
         }
         public void onEnableDataFitChanged(object sender, bool enable)
         {
@@ -115,5 +131,18 @@ namespace SpectrumAnalyzer.ViewModels
             DataPlotModel.InvalidatePlot(false);
         }
 
+        private void OnDataSelected(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (Data.SelectedData.Count > 0)
+            {
+                DataPlotModel.SetSeriesVisibility(PlotSeriesTag.SelectedSeries, true);
+            }
+            else
+            {
+                DataPlotModel.SetSeriesVisibility(PlotSeriesTag.SelectedSeries, false);
+            }
+
+            DataPlotModel.InvalidatePlot(true);
+        }
     }
 }

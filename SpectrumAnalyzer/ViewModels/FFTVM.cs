@@ -59,7 +59,10 @@ namespace SpectrumAnalyzer.ViewModels
                 MarkerType = MarkerType.Circle,
                 Title = "FFT Frequency Spectrum",
                 YAxisKey = "Primary Y",
-                CanTrackerInterpolatePoints = false
+                CanTrackerInterpolatePoints = false,
+                ItemsSource = SignalComponents,
+                DataFieldX = "Frequency",
+                DataFieldY = "Magnitude"
             };
 
             var FFTFreqSpectrumHightlight = new LineSeries()
@@ -70,7 +73,10 @@ namespace SpectrumAnalyzer.ViewModels
                 YAxisKey = "Primary Y",
                 CanTrackerInterpolatePoints = false,
                 Color = OxyColors.Red,
-                MarkerSize = 5
+                MarkerSize = 5,
+                ItemsSource = SelectedComponents,
+                DataFieldX = "Frequency",
+                DataFieldY = "Magnitude"
             };
 
             FrequencySpectrumPlot.AddSeries(FFTFreqSpectrum, PlotSeriesTag.FFTSpectrumFrequency);
@@ -93,7 +99,7 @@ namespace SpectrumAnalyzer.ViewModels
                 MarkerType = MarkerType.Circle,
                 Title = "FFT Period Spectrum",
                 YAxisKey = "Primary Y",
-                CanTrackerInterpolatePoints = false
+                CanTrackerInterpolatePoints = false,
             };
 
             var FFTPeriodSpectrumHightlight = new LineSeries()
@@ -104,7 +110,10 @@ namespace SpectrumAnalyzer.ViewModels
                 YAxisKey = "Primary Y",
                 CanTrackerInterpolatePoints = false,
                 Color = OxyColors.Red,
-                MarkerSize = 5
+                MarkerSize = 5,
+                ItemsSource = SelectedComponents,
+                DataFieldX = "Period",
+                DataFieldY = "Magnitude"
             };
 
             PeriodSpectrumPlot.AddSeries(FFTPeriodSpectrum, PlotSeriesTag.FFTSpectrumPeriod);
@@ -145,6 +154,7 @@ namespace SpectrumAnalyzer.ViewModels
         {
             Units = units;
             Units.OnUnitsUpdate += OnUnitsUpdate;
+            OnUnitsUpdate(this, new EventArgs());
         }
         public void PopulateDataSet(IEnumerable<Datapoint> dataset)
         {
@@ -169,19 +179,14 @@ namespace SpectrumAnalyzer.ViewModels
                 SignalComponents.Add(component);
             }
 
-            var freqLine = (LineSeries)FrequencySpectrumPlot.PlotSeries[PlotSeriesTag.FFTSpectrumFrequency];
             var periodLine = (LineSeries)PeriodSpectrumPlot.PlotSeries[PlotSeriesTag.FFTSpectrumPeriod];
-
-            freqLine.Points.Clear();
             periodLine.Points.Clear();
 
+            //must do this way because we cant plot the dc offset as being huge
             foreach (SignalComponent component in components)
             {
-                freqLine.Points.Add(new DataPoint(component.Frequency, component.Magnitude));
-
                 if(component.Period != 0)
                     periodLine.Points.Add(new DataPoint(component.Period, component.Magnitude));
-
             }
 
             FrequencySpectrumPlot.SetSeriesVisibility(PlotSeriesTag.FFTSpectrumFrequency, true);
@@ -227,20 +232,8 @@ namespace SpectrumAnalyzer.ViewModels
             if (SelectedComponents.Count > 0)
             {
                 //-------- Plot Selected Points ---------------------
-                
-                var freqData = new List<Datapoint>();
-                var periodData = new List<Datapoint>();
 
-                foreach(SignalComponent comp in SelectedComponents)
-                {
-                    freqData.Add(new Datapoint(comp.Frequency, comp.Magnitude));
-                    periodData.Add(new Datapoint(comp.Period, comp.Magnitude));
-                }
-
-                FrequencySpectrumPlot.UpdateLineSeriesData(PlotSeriesTag.FFTSpectrumHighlight, freqData);
                 FrequencySpectrumPlot.SetSeriesVisibility(PlotSeriesTag.FFTSpectrumHighlight, true);
-
-                PeriodSpectrumPlot.UpdateLineSeriesData(PlotSeriesTag.FFTSpectrumHighlight, periodData);
                 PeriodSpectrumPlot.SetSeriesVisibility(PlotSeriesTag.FFTSpectrumHighlight, true);
      
                 //------------ Plot Reconstruction From Selected Components ---------------------
@@ -261,7 +254,6 @@ namespace SpectrumAnalyzer.ViewModels
             PeriodSpectrumPlot.InvalidatePlot(true);
             ReconstructionPlot.InvalidatePlot(true);
         }
-
         public void OnUnitsUpdate(object sender, EventArgs e)
         {
             FrequencySpectrumPlot.Title = FrequencyPlotTitle;
