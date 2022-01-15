@@ -123,6 +123,10 @@ namespace SpectrumAnalyzer.Models
         public static double SamplingFrequency(double[,] inputData)
         {
             int n = inputData.GetLength(0) - 1;
+
+            if (n == -1)
+                return 0;
+
             return n / (inputData[n, 0] - inputData[0, 0]); //compute average sampling frequency based on start/end times
         }
 

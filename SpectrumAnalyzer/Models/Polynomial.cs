@@ -6,7 +6,6 @@ namespace SpectrumAnalyzer.Models
     public class Polynomial : IXYFunction
     {
         public int Order { get { return Coefficients.Length - 1; } }
-
         public double[] Coefficients { get; private set; } = { 0, 1, 2 };
 
         public Polynomial(double[] coefficients)

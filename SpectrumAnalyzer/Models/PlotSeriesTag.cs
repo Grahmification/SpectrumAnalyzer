@@ -8,5 +8,6 @@
         FFTSpectrumFrequency,
         FFTSpectrumPeriod,
         FFTSpectrumHighlight,
+        SelectedSeries
     }
 }

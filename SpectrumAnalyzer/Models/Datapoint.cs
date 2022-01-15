@@ -42,5 +42,6 @@ namespace SpectrumAnalyzer.Models
         {
             return dataset.Select(c => c.Y).ToList();
         }
+
     }
 }

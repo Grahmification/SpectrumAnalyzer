@@ -14,14 +14,13 @@ using System.Windows.Shapes;
 namespace SpectrumAnalyzer.UserControls
 {
     /// <summary>
-    /// Interaction logic for ReconstructionControl.xaml
+    /// Interaction logic for FFTControl.xaml
     /// </summary>
-    public partial class ReconstructionControl : UserControl
+    public partial class FFTControl : UserControl
     {
-        public ReconstructionControl()
+        public FFTControl()
         {
             InitializeComponent();
         }
-
     }
 }

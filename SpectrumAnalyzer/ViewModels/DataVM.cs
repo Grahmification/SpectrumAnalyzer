@@ -1,40 +1,38 @@
-﻿using System;
+﻿using SpectrumAnalyzer.Models;
+using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Text;
-using System.Windows.Controls;
-using OxyPlot;
-using OxyPlot.Axes;
-using OxyPlot.Series;
-using OxyPlot.Legends;
-using SpectrumAnalyzer.Models;
+using System.Linq;
 using System.Windows.Input;
-using System.ComponentModel;
-using System.Collections.ObjectModel;
 
 namespace SpectrumAnalyzer.ViewModels
 {
     public class DataVM : ObservableObject
     {
-        public PlotModelManaged DataPlotModel { get; set; }
-        public Dataset Data { get; set; } = null;
-        public int PolyFitOrder { get; set; } = 3;
+        public SelectedItemCollection<Datapoint> SelectedData { get; set; } = new SelectedItemCollection<Datapoint>();
+        public DatapointCollection RawData { get; private set; } = new DatapointCollection();
+        public DatapointCollection FitCurveData { get; private set; } = new DatapointCollection();
+        public DatapointCollection NormalizedData { get; private set; } = new DatapointCollection();
+        public DatapointCollection FFTInputData { get { return EnableFit ? NormalizedData : RawData; } }
+
+        public CompositeXYFunction FitCurve { get; private set; } = new CompositeXYFunction();
         public bool EnableFit
-        { 
-            get { return _enableFit;  }
-            set { SetEnableDataFit(value);  }
+        {
+            get { return _enableFit; }
+            set { _enableFit = value; FitEnableChanged?.Invoke(this, _enableFit); }
         }
+        private bool _enableFit = false;
+        public PolyFitVM PolyFit { get; private set; } = new PolyFitVM();
 
-        public string PlotTitle { get; set; } = "Data";
+        public double MinFrequency { get { return DataExists() ? FFT.MinFrequency(RawData.GetFFTDataFormat()) : 0; } }
+        public double MaxFrequency { get { return DataExists() ? FFT.MaxFrequency(RawData.GetFFTDataFormat()) : 0; } }
+        public double MaxPeriod { get { return DataExists() ? 1.0 / FFT.MinFrequency(RawData.GetFFTDataFormat()) : 0; } }
+        public double MinPeriod { get { return DataExists() ? 1.0 / FFT.MaxFrequency(RawData.GetFFTDataFormat()) : 0; } }
 
-        public double[] PolyCoefs { get; private set; } = new double[] { };
+        public Dictionary<double, SignalComponent> FFTData { get; private set; } = new Dictionary<double, SignalComponent>();
 
-        private bool _enableFit = true;
-
-        public UnitsVM Units { get; set; } = new UnitsVM();
-        public SpectrumVM Spectrum { get; private set; } = new SpectrumVM();
-        public ReconstructionVM Reconstruction { get; private set; } = new ReconstructionVM();
-
+        public event EventHandler FitCompleted;
+        public event EventHandler FFTCompleted;
+        public event EventHandler<bool> FitEnableChanged;
 
         /// <summary>
         /// RelayCommand for <see cref="ComputeFFT"/>
@@ -42,139 +40,58 @@ namespace SpectrumAnalyzer.ViewModels
         public ICommand ComputeFFTCommand { get; private set; }
 
         /// <summary>
-        /// RelayCommand for <see cref="ComputePolyFit"/>
+        /// RelayCommand for <see cref="ComputeFit"/>
         /// </summary>
-        public ICommand ComputePolyFitCommand { get; private set; }
+        public ICommand ComputeFitCommand { get; private set; }
 
         public DataVM()
         {
-            ComputeFFTCommand = new RelayCommand<object>(ComputeFFT, isDataNotNull);
-            ComputePolyFitCommand = new RelayCommand<object>(ComputePolyFit, isDataNotNull);
-            SetupPlot();
-            SetupSeries();
-
-
-            Units = new UnitsVM();
-            Units.OnUnitsUpdate += OnUnitsUpdate;
-        }
-        private void SetupPlot()
-        {
-            DataPlotModel = new PlotModelManaged()
-            {
-                Title = Units.PlotTitle
-            };
-
-            var XAxis = PlotModelManaged.AxisXPrimaryData();
-            XAxis.Title = Units.XAxisTitle;
-
-            var YAxis = PlotModelManaged.AxisYPrimaryData();
-            YAxis.Title = Units.YAxisTitle;
-
-            DataPlotModel.Axes.Add(XAxis);
-            DataPlotModel.Axes.Add(YAxis);
-            DataPlotModel.Legends.Add(PlotModelManaged.DataLengend());
-        }
-        private void SetupSeries()
-        {
-            var rawDataSeries = new LineSeries()
-            {
-                LineStyle = LineStyle.Solid,
-                MarkerType = MarkerType.Circle,
-                Title = "Raw Data",
-            };
-
-            var fitLineSeries = new LineSeries()
-            {
-                LineStyle = LineStyle.Dash,
-                MarkerType = MarkerType.None,
-                Title = "Polynomial Fit",
-            };
-
-            var normalizedDataSeries = new LineSeries()
-            {
-                LineStyle = LineStyle.Solid,
-                MarkerType = MarkerType.Diamond,
-                Title = "Normalized Data"
-            };
-
-            DataPlotModel.AddSeries(rawDataSeries, PlotSeriesTag.RawData);
-            DataPlotModel.AddSeries(fitLineSeries, PlotSeriesTag.FitLine);
-            DataPlotModel.AddSeries(normalizedDataSeries, PlotSeriesTag.NormalizedData);
+            ComputeFFTCommand = new RelayCommand<object>(ComputeFFT, DataExists);
+            ComputeFitCommand = new RelayCommand<object>(ComputeFit, DataExists);
         }
 
-        public void SetData(Models.Dataset data)
+        public void SetData(double[] XData, double[] YData)
         {
-            Data = data;
+            RawData.Clear();
+            
+            for (int i = 0; i < XData.Length; i++)
+            {
+                RawData.Add(new Datapoint(XData[i], YData[i]));
+            }
 
-            //https://github.com/ylatuya/oxyplot/blob/master/Source/Examples/ExampleLibrary/Examples/ItemsSourceExamples.cs
-            LineSeries dataline = (LineSeries)DataPlotModel.PlotSeries[PlotSeriesTag.RawData];
-            dataline.ItemsSource = Data.RawData;
+            RawData.ZeroNormalizeXValues();
 
-            DataPlotModel.SetSeriesVisibility(PlotSeriesTag.RawData, true);
-
-
-            DataPlotModel.ResetAllAxes();
-            DataPlotModel.InvalidatePlot(true);
-
-            ComputePolyFit(null);  
+            OnPropertyChanged("MinFrequency");
+            OnPropertyChanged("MaxFrequency");
+            OnPropertyChanged("MinPeriod");
+            OnPropertyChanged("MaxPeriod");
         }
-        public void ComputePolyFit(object parameter)
+        public void ComputeFit(object parameter)
         {
-            Data.ComputePolyFit(PolyFitOrder);
+            PolyFit.FitToData(RawData.XValues.ToArray(), RawData.YValues.ToArray());
 
-            DataPlotModel.UpdateLineSeriesData(PlotSeriesTag.FitLine, Data.PolyFitCurve.CurvePoints);
-            DataPlotModel.UpdateLineSeriesData(PlotSeriesTag.NormalizedData, Data.NormalizedData);     
-            DataPlotModel.InvalidatePlot(true);
-            PolyCoefs = Data.PolyFit.Coefficients;
-        }  
+            FitCurve = new CompositeXYFunction();
+            FitCurve.Curves.Add(PolyFit.PolyFunction);
+            
+            FitCurveData.SetData(FitCurve.ComputeFunction(RawData));
+            NormalizedData.SetData(DatapointCollection.YValueMultisetOperation(RawData, FitCurveData, (a, b) => a - b));
+
+            FitCompleted?.Invoke(this, new EventArgs());
+        }
         public void ComputeFFT(object parameter)
         {
-            if(EnableFit)
-            {
-                Data.ComputeFFT(Data.NormalizedData);
-            }
-            else
-            {
-                Data.ComputeFFT(Data.RawData);
-            }
+            var FFToutput = FFT.computeFFTComponents(FFTInputData.GetFFTDataFormat());
 
-            Spectrum.PopulateComponents(Data.FFTData.Values);
-            Reconstruction.PopulateComponents(Data.FFTData.Values);
-            SetReconstructionDataset();
+            FFTData.Clear();
+
+            foreach (SignalComponent component in FFToutput)
+                FFTData.Add(component.Frequency, component);
+
+            FFTCompleted?.Invoke(this, new EventArgs());
         }
-
-        public void SetEnableDataFit(bool enable)
+        public bool DataExists()
         {
-            _enableFit = enable;
-            DataPlotModel.SetSeriesVisibility(PlotSeriesTag.FitLine, enable);
-            DataPlotModel.SetSeriesVisibility(PlotSeriesTag.NormalizedData, enable);
-            DataPlotModel.InvalidatePlot(true);
+            return RawData.Count > 0;
         }
-
-        public bool isDataNotNull()
-        {
-            return !(Data == null);
-        }
-
-        public void SetReconstructionDataset()
-        {
-            if (EnableFit)
-            {
-                Reconstruction.PopulateDataSet(Data.NormalizedData);
-            }
-            else
-            {
-                Reconstruction.PopulateDataSet(Data.RawData);
-            }
-        }
-
-        public void OnUnitsUpdate(object sender, EventArgs e)
-        {
-            DataPlotModel.Title = Units.PlotTitle;
-            DataPlotModel.GetAxis(PlotModelManaged.XAxisPrimaryKey).Title = Units.XAxisTitle;
-            DataPlotModel.GetAxis(PlotModelManaged.YAxisPrimaryKey).Title = Units.YAxisTitle;
-            DataPlotModel.InvalidatePlot(false);
-        }
-
     }
 }

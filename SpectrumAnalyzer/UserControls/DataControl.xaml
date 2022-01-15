@@ -7,11 +7,12 @@
              xmlns:vm="clr-namespace:SpectrumAnalyzer.ViewModels"
              xmlns:oxy="http://oxyplot.org/wpf"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:ext="clr-namespace:SpectrumAnalyzer.Extensions"
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="800">
 
     <UserControl.DataContext>
-        <vm:DataVM/>
+        <vm:DataPlotVM/>
     </UserControl.DataContext>
     
     <Grid Background="White">
@@ -22,11 +23,18 @@
             <ColumnDefinition Width="0.3*"/>
          </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Column="0">
-            <Border BorderBrush="Black" Background="LightGray" BorderThickness="1" Margin="2">
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <Border Grid.Row="0" BorderBrush="Black" Background="LightGray" BorderThickness="1" Margin="2">
                 <StackPanel Margin="5">
                     <Label Content="Plot Settings" FontWeight="Bold" FontSize="12" Padding="-5"/>
-                    <Label Content="Chart Title:" FontSize="10" VerticalAlignment="Center" Padding="2"/>
+                    <Label Content="Data Title:" FontSize="10" VerticalAlignment="Center" Padding="2"/>
                     <TextBox Text="{Binding Units.PlotTitle}" Margin="5,0,5,0"></TextBox>
                     <Label Content="X Axis Units:" FontSize="10" VerticalAlignment="Center" Padding="2"/>
                     <ComboBox ItemsSource="{Binding Units.XUnits}" SelectedItem="{Binding Units.SelectedXUnit}" DisplayMemberPath="TimeString" Margin="5,0,5,0"></ComboBox>
@@ -36,7 +44,7 @@
                 </StackPanel>
             </Border>
 
-            <Border BorderBrush="Black" Background="LightGray" BorderThickness="1" Margin="2">
+            <Border Grid.Row="1" BorderBrush="Black" Background="LightGray" BorderThickness="1" Margin="2">
                 <StackPanel Margin="5">
                     <Label Content="Stats" FontWeight="Bold" FontSize="12" Padding="-5"/>
                     <TextBlock Text="Data Size:" FontSize="10" Padding="2"/>
@@ -53,21 +61,35 @@
                 </StackPanel>
             </Border>
 
-            <Border BorderBrush="Black" Background="LightGray" BorderThickness="1" Margin="2">
-                <StackPanel Margin="5">
-                    <Label Content="Pre-processing" FontWeight="Bold" FontSize="12" Padding="-5"/>
-                    <Expander IsExpanded="True">
+            <Border Grid.Row="2" BorderBrush="Black" Background="LightGray" BorderThickness="1" Margin="2">
+                <Grid Margin="5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="0" Content="Pre-processing" FontWeight="Bold" FontSize="12" Padding="-5"/>
+                    <Expander Grid.Row="1" IsExpanded="True">
                         <Expander.Header>
                             <DockPanel VerticalAlignment="Stretch">
                                 <TextBlock Text="Data Detrending" VerticalAlignment="Center"/>
-                                <CheckBox IsChecked="{Binding EnableFit}" Margin ="5" VerticalAlignment="Center"/>
+                                <CheckBox IsChecked="{Binding Data.EnableFit}" Margin ="5" VerticalAlignment="Center"/>
                             </DockPanel>
                         </Expander.Header>
-                        <StackPanel Margin="5">
-                            <TextBlock Text="Polynomial Order:"/>
-                            <TextBox Text="{Binding PolyFitOrder}" PreviewTextInput="NumberValidationTextBox"></TextBox>
-                            <Button Content="Auto fit" Command="{Binding ComputePolyFitCommand}" Margin="3"/>
-                            <ListBox Name="lbTodoList" ItemsSource="{Binding PolyCoefs, Mode=OneWay}" AlternationCount="{Binding Path=PolyCoefs.Length}" HorizontalContentAlignment="Stretch">
+
+                        <Grid Margin="5">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            
+                            <TextBlock Grid.Row="0" Text="Polynomial Order:"/>
+                            <TextBox Grid.Row="1" Text="{Binding Data.PolyFit.PolyFitOrder}" PreviewTextInput="NumberValidationTextBox"></TextBox>
+                            <Button Grid.Row="2" Content="Auto fit" Command="{Binding Data.ComputeFitCommand}" Margin="3"/>
+                            <TextBlock Grid.Row="3" Text="Components:" VerticalAlignment="Center"/>
+                            <ListBox Grid.Row="4" ItemsSource="{Binding Data.PolyFit.PolyCoefs, Mode=OneWay}" AlternationCount="{Binding Path=Data.PolyFit.PolyCoefs.Length}" HorizontalContentAlignment="Stretch" ClipToBounds="True">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <Grid Margin="0,2">
@@ -76,25 +98,26 @@
                                                 <ColumnDefinition Width="*" />
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Grid.Column="0" Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplatedParent.(ItemsControl.AlternationIndex), StringFormat={}X^{0}}" />
-                                            <TextBlock Grid.Column="1" Text="{Binding}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding StringFormat={}{0:0.000}}" />
                                         </Grid>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                        </StackPanel>
+                        </Grid>
                     </Expander>
-                </StackPanel>
+                </Grid>
             </Border>
 
-            <Border BorderBrush="Black" Background="LightGray" BorderThickness="1" Margin="2">
+            <Border Grid.Row="3" BorderBrush="Black" Background="LightGray" BorderThickness="1" Margin="2">
                 <StackPanel Margin="5">
-                    <Label Content="Pre-processing" FontWeight="Bold" FontSize="12" Padding="-5"/>
-                    <Button Content="Compute FFT" Command="{Binding ComputeFFTCommand}" Padding="5" Margin="5"/>
+                    <Label Content="Compute" FontWeight="Bold" FontSize="12" Padding="-5"/>
+                    <Button Content="Compute FFT" Command="{Binding Data.ComputeFFTCommand}" Padding="5" Margin="5"/>
                 </StackPanel>
             </Border>
 
-        </StackPanel>
+        </Grid>
 
+        <GridSplitter Grid.Column="0" Width="2"/>
         <oxy:PlotView Grid.Column="1" Model="{Binding DataPlotModel}">
             <oxy:PlotView.ContextMenu>
                 <ContextMenu>
@@ -103,7 +126,7 @@
             </oxy:PlotView.ContextMenu>
         </oxy:PlotView>
 
-
+        <GridSplitter Grid.Column="1" Width="2"/>
 
         <Grid Grid.Column="2">
             <Border BorderBrush="Black" Background="LightGray" BorderThickness="1" Margin="2">
@@ -115,6 +138,7 @@
                     <Label Grid.Row="0"  Content="Data" FontWeight="Bold" FontSize="12" Padding="-5"/>
                     <DataGrid Grid.Row="1" ItemsSource="{Binding Data.RawData}"
                               Style="{StaticResource BlueDG}"
+                              ext:MultiSelector.SelectedItems ="{Binding Data.SelectedData}"
                               Width="Auto">
                         <DataGrid.Columns>
                             <DataGridTextColumn Width="*" Binding="{Binding X, StringFormat={}{0:0.000}}" IsReadOnly="False">

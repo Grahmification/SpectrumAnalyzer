@@ -2,21 +2,21 @@
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Text;
 using ExcelDataReader;
 using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace SpectrumAnalyzer.Models
 {
-    public class ExcelSpreadSheet
+    public class SpreadSheet
     {
         public Dictionary<string, DataTable> WorkSheets { get; private set; } = new Dictionary<string, DataTable>();
         public List<string> WorkSheetNames { get { return WorkSheets.Keys.ToList(); } }
 
         public string FilePath { get; private set; } = "";
+        public string FileName { get { return Path.GetFileName(FilePath); } }
 
-        public ExcelSpreadSheet(string filePath)
+        public SpreadSheet(string filePath)
         {
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
@@ -61,8 +61,6 @@ namespace SpectrumAnalyzer.Models
 
             return workSheet.Rows[row-1][col-1].ToString();
         }
-
-
         private void PrepareData(IExcelDataReader reader)
         {
             //// reader.IsFirstRowAsColumnNames
