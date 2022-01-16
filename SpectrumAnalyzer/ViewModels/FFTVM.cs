@@ -65,6 +65,7 @@ namespace SpectrumAnalyzer.ViewModels
             {
                 LineStyle = LineStyle.Solid,
                 MarkerType = MarkerType.Circle,
+                Color = OxyColors.Black,
                 Title = "FFT Frequency Spectrum",
                 YAxisKey = "Primary Y",
                 CanTrackerInterpolatePoints = false,
@@ -100,6 +101,7 @@ namespace SpectrumAnalyzer.ViewModels
             {
                 LineStyle = LineStyle.Solid,
                 MarkerType = MarkerType.Circle,
+                Color = OxyColors.Black,
                 Title = "FFT Period Spectrum",
                 YAxisKey = "Primary Y",
                 CanTrackerInterpolatePoints = false,
@@ -130,6 +132,7 @@ namespace SpectrumAnalyzer.ViewModels
             {
                 LineStyle = LineStyle.Solid,
                 MarkerType = MarkerType.Circle,
+                Color = OxyColors.Black,
                 Title = "Input Data",
                 CanTrackerInterpolatePoints = false,
                 ItemsSource = Dataset
@@ -139,6 +142,7 @@ namespace SpectrumAnalyzer.ViewModels
             {
                 LineStyle = LineStyle.Solid,
                 MarkerType = MarkerType.None,
+                Color = OxyColors.Blue,
                 Title = PreviewReconstruction.Name,
                 CanTrackerInterpolatePoints = true,
                 ItemsSource = PreviewReconstruction.Points

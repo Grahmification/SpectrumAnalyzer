@@ -40,6 +40,7 @@ namespace SpectrumAnalyzer.ViewModels
             {
                 LineStyle = LineStyle.Solid,
                 MarkerType = MarkerType.Circle,
+                Color = OxyColors.Black,
                 Title = "Raw Data",
                 ItemsSource = Data.RawData,
             };
@@ -48,6 +49,7 @@ namespace SpectrumAnalyzer.ViewModels
             {
                 LineStyle = LineStyle.Dash,
                 MarkerType = MarkerType.None,
+                Color = OxyColors.Black,
                 Title = "Polynomial Fit",
                 ItemsSource = Data.FitCurveData,
             };
@@ -56,6 +58,7 @@ namespace SpectrumAnalyzer.ViewModels
             {
                 LineStyle = LineStyle.Solid,
                 MarkerType = MarkerType.Diamond,
+                Color = OxyColors.Blue,
                 Title = "Normalized Data",
                 ItemsSource = Data.NormalizedData,
             };
