@@ -21,7 +21,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="150"/>
+            <ColumnDefinition Width="250"/>
         </Grid.ColumnDefinitions>
 
         <Border Grid.Column="0" BorderBrush="Black" Background="LightGray" BorderThickness="1" Margin="2">
@@ -32,7 +32,7 @@
                 </Grid.RowDefinitions>
 
                 <Label Grid.Row="0" Content="FFT Components" FontWeight="Bold" FontSize="12" Padding="0"/>
-
+                
                 <DataGrid Grid.Row="1" Name="dg2" Margin="5" Background="White" 
                             SelectedItem="{Binding SelectedComponent}"
                             ItemsSource="{Binding SignalComponents}"
@@ -107,6 +107,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
@@ -121,13 +122,24 @@
                     <TextBox Grid.Column="1" Text="{Binding NewReconstructionName}"/>
                 </Grid>
 
-                <DataGrid Grid.Row="2" Name="ReconstructionDG" Margin="5" Background="White" 
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="Interpolation: "/>
+                    <TextBox Grid.Column="1" Text="{Binding SelectedReconstruction.InterpolationFactor}" PreviewTextInput="NumberValidationTextBox"></TextBox>
+                </Grid>
+
+                <DataGrid Grid.Row="3" Name="ReconstructionDG" Margin="5" Background="White" 
                               ItemsSource="{Binding Reconstructions}"
                               AlternationCount="{Binding SignalComponents.Count}"
                               Style="{StaticResource BlueDG}">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="Components" Binding="{Binding Function.Curves.Count}" IsReadOnly="True"/>
+                        <DataGridTextColumn Width="*" Header="Name" Binding="{Binding Name}" IsReadOnly="True"/>
+                        <DataGridTextColumn Width="*" Header="Components" Binding="{Binding Function.Curves.Count}" IsReadOnly="True"/>
+                        <DataGridTextColumn Width="*" Header="Interpolation" Binding="{Binding InterpolationFactor}" IsReadOnly="False"/>
                     </DataGrid.Columns>
                 </DataGrid>
 

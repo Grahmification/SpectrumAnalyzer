@@ -13,7 +13,7 @@ namespace SpectrumAnalyzer.ViewModels
     {
         public DatapointCollection Dataset { get; set; } = new DatapointCollection();
         public ObservableCollection<SignalReconstructionVM> Reconstructions { get; set; } = new ObservableCollection<SignalReconstructionVM>();
-        public SignalReconstructionVM SelectedReconstruction { get; private set; } = new SignalReconstructionVM();
+        public SignalReconstructionVM SelectedReconstruction { get; private set; } = new SignalReconstructionVM("Reconstruction");
 
         public string NewReconstructionName { get; set; } = "Reconstruction 1";
         public ObservableCollection<SignalComponent> SignalComponents { get; set; } = new ObservableCollection<SignalComponent>();
@@ -30,6 +30,8 @@ namespace SpectrumAnalyzer.ViewModels
         {
             AddReconstructionCommand = new RelayCommand<object>(AddReconstruction, AreSignalComponentsSelected);
             SelectedComponents.CollectionChanged += OnSignalComponentsSelected;
+
+            SelectedReconstruction.InterpolationFactor = 5;
 
             SetupPlots();
         }
@@ -118,10 +120,11 @@ namespace SpectrumAnalyzer.ViewModels
             var fitLineSeries = new LineSeries()
             {
                 LineStyle = LineStyle.Solid,
-                MarkerType = MarkerType.Circle,
-                Title = "Reconstruction",
-                CanTrackerInterpolatePoints = true
-            };
+                MarkerType = MarkerType.None,
+                Title = SelectedReconstruction.Name,
+                CanTrackerInterpolatePoints = true,
+                ItemsSource = SelectedReconstruction.Points
+        };
 
             ReconstructionPlot.Model.AddSeries(DataSeries, PlotSeriesTag.RawData);
             ReconstructionPlot.Model.AddSeries(fitLineSeries, PlotSeriesTag.FitLine);
@@ -176,7 +179,9 @@ namespace SpectrumAnalyzer.ViewModels
 
         public void AddReconstruction(object parameter)
         {
-            var recon = new SignalReconstructionVM(new List<SignalComponent>(SelectedComponents), NewReconstructionName);
+            var recon = new SignalReconstructionVM(NewReconstructionName);
+            recon.InterpolationFactor = SelectedReconstruction.InterpolationFactor;
+            recon.PopulateComponents(new List<SignalComponent>(SelectedComponents));
             recon.PopulatePoints((List<double>)Dataset.XValues);
 
             Reconstructions.Add(recon);
@@ -186,7 +191,7 @@ namespace SpectrumAnalyzer.ViewModels
             var fitLineSeries = new LineSeries()
             {
                 LineStyle = LineStyle.Solid,
-                MarkerType = MarkerType.Circle,
+                MarkerType = MarkerType.None,
                 CanTrackerInterpolatePoints = true,
                 ItemsSource = recon.Points,
                 Title = recon.Name
@@ -210,9 +215,8 @@ namespace SpectrumAnalyzer.ViewModels
                 selected = true;
 
                 //------------ Plot Reconstruction From Selected Components ---------------------
-                SelectedReconstruction = new SignalReconstructionVM(SelectedComponents);
+                SelectedReconstruction.PopulateComponents(SelectedComponents);
                 SelectedReconstruction.PopulatePoints((List<double>)Dataset.XValues);
-                ((LineSeries)ReconstructionPlot.Model.PlotSeries[PlotSeriesTag.FitLine]).ItemsSource = SelectedReconstruction.Points;
             }
 
             FrequencySpectrumPlot.Model.SetSeriesVisibility(PlotSeriesTag.FFTSpectrumHighlight, selected);

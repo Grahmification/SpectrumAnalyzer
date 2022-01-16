@@ -18,8 +18,6 @@ namespace SpectrumAnalyzer.Models
             foreach (Datapoint p in dataset)
                 Items.Add(p);
         }
-
-
         public void XValueOperation(Func<double, double> operation)
         {
             for (int i = 0; i < Items.Count; i++)
@@ -39,8 +37,6 @@ namespace SpectrumAnalyzer.Models
             double XOffset = Items[0].X;
             XValueOperation(x => x - XOffset);         
         }
-
-
         public double[,] GetFFTDataFormat()
         {
             var inputData = new double[Items.Count, 2];
@@ -62,6 +58,33 @@ namespace SpectrumAnalyzer.Models
             {
                 output.Add(new Datapoint(dataset1[i].X, operation(dataset1[i].Y, dataset2[i].Y)));
             }
+
+            return output;
+        }
+
+        public static double InterpolateValue(double y0, double y1, double x, double x0 = 0, double x1 = 1)
+        {
+            return y0 + (x - x0) * (y1 - y0) / (x1 - x0);
+        }
+        public static IList<double> InterpolateList(IList<double> inputVals, int interpolationFactor)
+        {
+            if (interpolationFactor < 0)
+                interpolationFactor = 0;
+            
+            List<double> output = new List<double>();
+
+            for(int i = 0; i<inputVals.Count-1; i++)
+            {
+                output.Add(inputVals[i]);
+                
+                for (int j = 0; j < interpolationFactor; j++)
+                {
+                    double x = (j + 1.0) / (interpolationFactor + 1.0);
+                    output.Add(InterpolateValue(inputVals[i], inputVals[i + 1], x));
+                }
+            }
+
+            output.Add(inputVals.LastOrDefault());
 
             return output;
         }
