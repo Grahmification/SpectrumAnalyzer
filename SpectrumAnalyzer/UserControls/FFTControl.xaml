@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:SpectrumAnalyzer"
+             xmlns:local="clr-namespace:SpectrumAnalyzer.UserControls"
              xmlns:vm="clr-namespace:SpectrumAnalyzer.ViewModels"
              xmlns:conv="clr-namespace:SpectrumAnalyzer.Converters"
              xmlns:ext="clr-namespace:SpectrumAnalyzer.Extensions"
@@ -80,7 +80,7 @@
                         <TextBlock Text="Reconstruction Plot" VerticalAlignment="Center"/>
                     </DockPanel>
                 </Expander.Header>
-                <oxy:PlotView Grid.Row="0" Model="{Binding ReconstructionPlot}"/>
+                <local:PlotControl Grid.Row="0" DataContext="{Binding ReconstructionPlot}"/>
             </Expander>
 
             <Expander x:Name="periodExpander" Grid.Row="1" IsExpanded="True" Height="Auto">
@@ -91,10 +91,10 @@
                 </Expander.Header>
                 <TabControl TabStripPlacement="Top">
                     <TabItem Header="Frequency">
-                        <oxy:PlotView Model="{Binding FrequencySpectrumPlot}"/>
+                        <local:PlotControl DataContext="{Binding FrequencySpectrumPlot}"/>
                     </TabItem>
                     <TabItem Header="Period">
-                        <oxy:PlotView Model="{Binding PeriodSpectrumPlot}"/>
+                        <local:PlotControl DataContext="{Binding PeriodSpectrumPlot}"/>
                     </TabItem>
                 </TabControl>
             </Expander>

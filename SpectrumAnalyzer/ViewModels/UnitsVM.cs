@@ -11,7 +11,7 @@ namespace SpectrumAnalyzer.ViewModels
         public XAxisUnits SelectedXUnit { get; set; } = XAxisUnits.DefaultUnits()[0];
 
         public string SelectedXUnitString { get { return SelectedXUnit.TimeUnit; } }
-        public string PlotTitle { get; set; } = "";
+        public string DataTitle { get; set; } = "";
         public string YAxisTitle { get; set; } = "Y Data";
         public string XAxisTitle { get { return SelectedXUnit.TimeString; } }
 
@@ -31,10 +31,6 @@ namespace SpectrumAnalyzer.ViewModels
         public void UpdateUnits(object parameter)
         {
             OnUnitsUpdate?.Invoke(this, new EventArgs());
-        }
-        public string FormattedPlotTitle(string prefix)
-        {
-            return PlotTitle == "" ? prefix : string.Format("{0}: {1}", prefix, PlotTitle);
         }
     }
 }

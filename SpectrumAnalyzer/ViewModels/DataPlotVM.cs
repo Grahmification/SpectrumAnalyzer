@@ -8,12 +8,10 @@ namespace SpectrumAnalyzer.ViewModels
 {
     public class DataPlotVM : ObservableObject
     {
-        public PlotModelManaged DataPlotModel { get; set; }      
-        public string DataPlotTitle { get { return Units.FormattedPlotTitle("Data"); } }
-
         public DataVM Data { get; private set; } = new DataVM();
         public UnitsVM Units { get; set; } = new UnitsVM();
         public FFTVM FFT { get; private set; } = new FFTVM();
+        public PlotVM DataPlot { get; private set; } = new PlotVM();
 
         public DataPlotVM()
         {
@@ -24,30 +22,17 @@ namespace SpectrumAnalyzer.ViewModels
             Data.SelectedData.CollectionChanged += OnDataSelected;
 
             SetupPlot();
-            SetupSeries();
 
             FFT.SetUnits(Units);
             Units.UpdateUnits(null);
         }
         private void SetupPlot()
         {
-            DataPlotModel = new PlotModelManaged()
-            {
-                Title = DataPlotTitle
-            };
+            DataPlot.TitlePrefix = "Data";
+            DataPlot.TitleSuffix = Units.DataTitle;
+            DataPlot.AxisTitlePrimaryX = Units.XAxisTitle;
+            DataPlot.AxisTitlePrimaryY = Units.YAxisTitle;
 
-            var XAxis = PlotModelManaged.AxisXPrimaryData();
-            XAxis.Title = Units.XAxisTitle;
-
-            var YAxis = PlotModelManaged.AxisYPrimaryData();
-            YAxis.Title = Units.YAxisTitle;
-
-            DataPlotModel.Axes.Add(XAxis);
-            DataPlotModel.Axes.Add(YAxis);
-            DataPlotModel.Legends.Add(PlotModelManaged.DataLengend());
-        }
-        private void SetupSeries()
-        {
             //https://github.com/ylatuya/oxyplot/blob/master/Source/Examples/ExampleLibrary/Examples/ItemsSourceExamples.cs
 
             var rawDataSeries = new LineSeries()
@@ -86,23 +71,22 @@ namespace SpectrumAnalyzer.ViewModels
                 ItemsSource = Data.SelectedData
             };
 
-            DataPlotModel.AddSeries(rawDataSeries, PlotSeriesTag.RawData);
-            DataPlotModel.AddSeries(fitLineSeries, PlotSeriesTag.FitLine);
-            DataPlotModel.AddSeries(normalizedDataSeries, PlotSeriesTag.NormalizedData);
-            DataPlotModel.AddSeries(dataHightlightSerires, PlotSeriesTag.SelectedSeries);
+            DataPlot.Model.AddSeries(rawDataSeries, PlotSeriesTag.RawData);
+            DataPlot.Model.AddSeries(fitLineSeries, PlotSeriesTag.FitLine);
+            DataPlot.Model.AddSeries(normalizedDataSeries, PlotSeriesTag.NormalizedData);
+            DataPlot.Model.AddSeries(dataHightlightSerires, PlotSeriesTag.SelectedSeries);
         }
 
         public void SetData(double[] XData, double[] YData, string dataTitle)
         {
             Data.SetData(XData, YData);
 
-            DataPlotModel.SetSeriesVisibility(PlotSeriesTag.RawData, true);
-            DataPlotModel.ResetAllAxes();
-            DataPlotModel.InvalidatePlot(true);
+            DataPlot.Model.SetSeriesVisibility(PlotSeriesTag.RawData, true);
+            DataPlot.ResetZoom(null);
 
             Data.ComputeFit(null);
 
-            Units.PlotTitle = dataTitle;
+            Units.DataTitle = dataTitle;
             Units.UpdateUnits(null);     
         }
 
@@ -119,30 +103,29 @@ namespace SpectrumAnalyzer.ViewModels
         }
         public void onEnableDataFitChanged(object sender, bool enable)
         {
-            DataPlotModel.SetSeriesVisibility(PlotSeriesTag.FitLine, enable);
-            DataPlotModel.SetSeriesVisibility(PlotSeriesTag.NormalizedData, enable);
-            DataPlotModel.InvalidatePlot(true);
+            DataPlot.Model.SetSeriesVisibility(PlotSeriesTag.FitLine, enable);
+            DataPlot.Model.SetSeriesVisibility(PlotSeriesTag.NormalizedData, enable);
+            DataPlot.Model.InvalidatePlot(true);
         }
         public void OnUnitsUpdate(object sender, EventArgs e)
         {
-            DataPlotModel.Title = DataPlotTitle;
-            DataPlotModel.GetAxis(PlotModelManaged.XAxisPrimaryKey).Title = Units.XAxisTitle;
-            DataPlotModel.GetAxis(PlotModelManaged.YAxisPrimaryKey).Title = Units.YAxisTitle;
-            DataPlotModel.InvalidatePlot(false);
+            DataPlot.TitleSuffix = Units.DataTitle;
+            DataPlot.AxisTitlePrimaryX = Units.XAxisTitle;
+            DataPlot.AxisTitlePrimaryY = Units.YAxisTitle;
         }
-
         private void OnDataSelected(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (Data.SelectedData.Count > 0)
             {
-                DataPlotModel.SetSeriesVisibility(PlotSeriesTag.SelectedSeries, true);
+                DataPlot.Model.SetSeriesVisibility(PlotSeriesTag.SelectedSeries, true);
             }
             else
             {
-                DataPlotModel.SetSeriesVisibility(PlotSeriesTag.SelectedSeries, false);
+                DataPlot.Model.SetSeriesVisibility(PlotSeriesTag.SelectedSeries, false);
             }
 
-            DataPlotModel.InvalidatePlot(true);
+            DataPlot.Model.InvalidatePlot(true);
         }
+
     }
 }

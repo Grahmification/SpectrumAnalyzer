@@ -2,6 +2,7 @@
 using OxyPlot.Axes;
 using OxyPlot.Legends;
 using OxyPlot.Series;
+using OxyPlot.Wpf;
 using System;
 using System.Collections.Generic;
 
@@ -21,7 +22,6 @@ namespace SpectrumAnalyzer.Models
             series.Tag = tag;
             PlotSeries.Add(tag, series);
         }
-
         public void UpdateLineSeriesData(PlotSeriesTag series, List<Datapoint> data)
         {
             LineSeries dataline = (LineSeries)PlotSeries[series];
@@ -35,7 +35,6 @@ namespace SpectrumAnalyzer.Models
             if (Series.Contains(dataline) == false)
                 Series.Add(dataline);
         }
-
         public void SetSeriesVisibility(PlotSeriesTag series, bool visible)
         {
             if (visible)
@@ -49,6 +48,16 @@ namespace SpectrumAnalyzer.Models
             }
         }
 
+        public void ResetZoom()
+        {
+            this.ResetAllAxes();
+            this.InvalidatePlot(false);
+        }
+        public void SaveImage(string filePath)
+        {
+            var pngExporter = new PngExporter { Width = 2000, Height = 1200 };
+            pngExporter.ExportToFile(this, filePath);
+        }
 
         public static LinearAxis AxisXPrimaryData(string title = "X Data")
         {

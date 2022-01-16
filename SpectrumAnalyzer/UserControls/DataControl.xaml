@@ -35,7 +35,7 @@
                 <StackPanel Margin="5">
                     <Label Content="Plot Settings" FontWeight="Bold" FontSize="12" Padding="-5"/>
                     <Label Content="Data Title:" FontSize="10" VerticalAlignment="Center" Padding="2"/>
-                    <TextBox Text="{Binding Units.PlotTitle}" Margin="5,0,5,0"></TextBox>
+                    <TextBox Text="{Binding Units.DataTitle}" Margin="5,0,5,0"></TextBox>
                     <Label Content="X Axis Units:" FontSize="10" VerticalAlignment="Center" Padding="2"/>
                     <ComboBox ItemsSource="{Binding Units.XUnits}" SelectedItem="{Binding Units.SelectedXUnit}" DisplayMemberPath="TimeString" Margin="5,0,5,0"></ComboBox>
                     <Label Content="Y Axis Units:" FontSize="10" VerticalAlignment="Center" Padding="2"/>
@@ -118,13 +118,7 @@
         </Grid>
 
         <GridSplitter Grid.Column="0" Width="2"/>
-        <oxy:PlotView Grid.Column="1" Model="{Binding DataPlotModel}">
-            <oxy:PlotView.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="Reset" Command="{Binding ResetCommand}"></MenuItem>
-                </ContextMenu>
-            </oxy:PlotView.ContextMenu>
-        </oxy:PlotView>
+        <local:PlotControl Grid.Column="1" DataContext="{Binding DataPlot}"/>
 
         <GridSplitter Grid.Column="1" Width="2"/>
 

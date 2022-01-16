@@ -14,7 +14,7 @@ namespace SpectrumAnalyzer.Models
         public List<string> WorkSheetNames { get { return WorkSheets.Keys.ToList(); } }
 
         public string FilePath { get; private set; } = "";
-        public string FileName { get { return Path.GetFileName(FilePath); } }
+        public string FileName { get { return Path.GetFileNameWithoutExtension(FilePath); } }
 
         public SpreadSheet(string filePath)
         {
