@@ -13,7 +13,8 @@ namespace SpectrumAnalyzer.ViewModels
     {
         public DatapointCollection Dataset { get; set; } = new DatapointCollection();
         public ObservableCollection<SignalReconstructionVM> Reconstructions { get; set; } = new ObservableCollection<SignalReconstructionVM>();
-        public SignalReconstructionVM SelectedReconstruction { get; private set; } = new SignalReconstructionVM("Reconstruction");
+        public SignalReconstructionVM SelectedReconstruction { get; set; } = null;
+        public SignalReconstructionVM PreviewReconstruction { get; private set; } = new SignalReconstructionVM("Reconstruction Preview");
 
         public string NewReconstructionName { get; set; } = "Reconstruction 1";
         public ObservableCollection<SignalComponent> SignalComponents { get; set; } = new ObservableCollection<SignalComponent>();
@@ -24,14 +25,31 @@ namespace SpectrumAnalyzer.ViewModels
         public PlotVM ReconstructionPlot { get; set; } = new PlotVM();
         public UnitsVM Units { get; private set; } = new UnitsVM();
 
+        public event EventHandler<SignalReconstructionVM> ExportReconstructionComponentsRequest;
+
+        public event EventHandler<SignalReconstructionVM> ExportReconstructionPointsRequest;
+        
+        public event EventHandler<SignalReconstructionVM> ExportReconstructionInterpolatedPointsRequest;
+
         public ICommand AddReconstructionCommand { get; private set; }
+        public ICommand DeleteReconstructionCommand { get; private set; }
+        public ICommand ExportReconstructionComponentsCommand { get; private set; }
+        public ICommand ExportReconstructionPointsCommand { get; private set; }
+        public ICommand ExportReconstructionInterpolatedPointsCommand { get; private set; }
+        public ICommand ExportAllComponentsCommand { get; private set; }
 
         public FFTVM()
         {
-            AddReconstructionCommand = new RelayCommand<object>(AddReconstruction, AreSignalComponentsSelected);
+            AddReconstructionCommand = new RelayCommand<object>(AddReconstruction, AllowNewReconstruction);
+            DeleteReconstructionCommand = new RelayCommand<object>(DeleteReconstruction, AreReconstructionsSelected);
+            ExportReconstructionComponentsCommand = new RelayCommand<object>(s => ExportReconstructionComponentsRequest?.Invoke(this, SelectedReconstruction), AreReconstructionsSelected);
+            ExportReconstructionPointsCommand = new RelayCommand<object>(s => ExportReconstructionPointsRequest?.Invoke(this, SelectedReconstruction), AreReconstructionsSelected);
+            ExportReconstructionInterpolatedPointsCommand = new RelayCommand<object>(s => ExportReconstructionInterpolatedPointsRequest?.Invoke(this, SelectedReconstruction), AreReconstructionsSelected);
+            ExportAllComponentsCommand = new RelayCommand<object>(ExportAllComponents, ()=> SignalComponents.Count >0);
+
             SelectedComponents.CollectionChanged += OnSignalComponentsSelected;
 
-            SelectedReconstruction.InterpolationFactor = 5;
+            PreviewReconstruction.InterpolationFactor = 5;
 
             SetupPlots();
         }
@@ -121,9 +139,9 @@ namespace SpectrumAnalyzer.ViewModels
             {
                 LineStyle = LineStyle.Solid,
                 MarkerType = MarkerType.None,
-                Title = SelectedReconstruction.Name,
+                Title = PreviewReconstruction.Name,
                 CanTrackerInterpolatePoints = true,
-                ItemsSource = SelectedReconstruction.Points
+                ItemsSource = PreviewReconstruction.Points
         };
 
             ReconstructionPlot.Model.AddSeries(DataSeries, PlotSeriesTag.RawData);
@@ -180,7 +198,7 @@ namespace SpectrumAnalyzer.ViewModels
         public void AddReconstruction(object parameter)
         {
             var recon = new SignalReconstructionVM(NewReconstructionName);
-            recon.InterpolationFactor = SelectedReconstruction.InterpolationFactor;
+            recon.InterpolationFactor = PreviewReconstruction.InterpolationFactor;
             recon.PopulateComponents(new List<SignalComponent>(SelectedComponents));
             recon.PopulatePoints((List<double>)Dataset.XValues);
 
@@ -194,16 +212,56 @@ namespace SpectrumAnalyzer.ViewModels
                 MarkerType = MarkerType.None,
                 CanTrackerInterpolatePoints = true,
                 ItemsSource = recon.Points,
-                Title = recon.Name
+                Title = recon.Name,
             };
 
             ReconstructionPlot.Model.AddSeries(fitLineSeries, (PlotSeriesTag)(Reconstructions.Count + 200));
             ReconstructionPlot.Model.SetSeriesVisibility((PlotSeriesTag)(Reconstructions.Count + 200), true);
             ReconstructionPlot.Model.InvalidatePlot(true);
         }
+        public void DeleteReconstruction(object parameter)
+        {
+            var recon = SelectedReconstruction;
+            
+            foreach (LineSeries series in ReconstructionPlot.Model.PlotSeries.Values)
+            {
+                if (series.Title == recon.Name)
+                    ReconstructionPlot.Model.RemoveSeries(series);
+            }
+
+            Reconstructions.Remove(recon);
+            ReconstructionPlot.Model.InvalidatePlot(true);
+        }
         public bool AreSignalComponentsSelected()
         {
             return SelectedComponents.Count > 0;
+        }
+        public bool AreReconstructionsSelected()
+        {
+            return SelectedReconstruction != null;
+        }
+        public bool NewReconstructionNameUnique()
+        {
+            for (int i = 0; i < Reconstructions.Count; i++)
+            {
+                if (Reconstructions[i].Name == NewReconstructionName)
+                    return false;
+            }
+
+            return true;
+        }
+        public bool AllowNewReconstruction()
+        {
+            return AreSignalComponentsSelected() && NewReconstructionNameUnique();
+        }
+
+        public void ExportAllComponents(object parameter)
+        {
+            var recon = new SignalReconstructionVM("Full Spectrum");
+            recon.PopulateComponents(SignalComponents);
+            recon.PopulatePoints((List<double>)Dataset.XValues);
+
+            ExportReconstructionComponentsRequest?.Invoke(this, recon);
         }
 
         private void OnSignalComponentsSelected(object sender, NotifyCollectionChangedEventArgs e)
@@ -215,8 +273,8 @@ namespace SpectrumAnalyzer.ViewModels
                 selected = true;
 
                 //------------ Plot Reconstruction From Selected Components ---------------------
-                SelectedReconstruction.PopulateComponents(SelectedComponents);
-                SelectedReconstruction.PopulatePoints((List<double>)Dataset.XValues);
+                PreviewReconstruction.PopulateComponents(SelectedComponents);
+                PreviewReconstruction.PopulatePoints((List<double>)Dataset.XValues);
             }
 
             FrequencySpectrumPlot.Model.SetSeriesVisibility(PlotSeriesTag.FFTSpectrumHighlight, selected);

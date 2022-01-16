@@ -8,19 +8,16 @@ namespace SpectrumAnalyzer.ViewModels
 {
     public class DataVM : ObservableObject
     {
+        public string DataFilePath { get; set; } = "";
+
         public SelectedItemCollection<Datapoint> SelectedData { get; set; } = new SelectedItemCollection<Datapoint>();
         public DatapointCollection RawData { get; private set; } = new DatapointCollection();
         public DatapointCollection FitCurveData { get; private set; } = new DatapointCollection();
         public DatapointCollection NormalizedData { get; private set; } = new DatapointCollection();
-        public DatapointCollection FFTInputData { get { return EnableFit ? NormalizedData : RawData; } }
+        public DatapointCollection FFTInputData { get { return FitEnabled ? NormalizedData : RawData; } }
 
+        public bool FitEnabled { get { return PolyFit.Enabled; } } //will need to or multiple of these if more fit types in the future
         public CompositeXYFunction FitCurve { get; private set; } = new CompositeXYFunction();
-        public bool EnableFit
-        {
-            get { return _enableFit; }
-            set { _enableFit = value; FitEnableChanged?.Invoke(this, _enableFit); }
-        }
-        private bool _enableFit = false;
         public PolyFitVM PolyFit { get; private set; } = new PolyFitVM();
 
         public double MinFrequency { get { return DataExists() ? FFT.MinFrequency(RawData.GetFFTDataFormat()) : 0; } }
@@ -32,7 +29,6 @@ namespace SpectrumAnalyzer.ViewModels
 
         public event EventHandler FitCompleted;
         public event EventHandler FFTCompleted;
-        public event EventHandler<bool> FitEnableChanged;
 
         /// <summary>
         /// RelayCommand for <see cref="ComputeFFT"/>

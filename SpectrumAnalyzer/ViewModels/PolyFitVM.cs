@@ -1,7 +1,5 @@
 ﻿using SpectrumAnalyzer.Models;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SpectrumAnalyzer.ViewModels
 {
@@ -10,6 +8,16 @@ namespace SpectrumAnalyzer.ViewModels
         public Polynomial PolyFunction { get; private set; } = new Polynomial();
         public int PolyFitOrder { get; set; } = 1;
         public double[] PolyCoefs { get; private set; } = new double[] { };
+        public string PolyCoefsString { get {return Enabled? string.Join(",", Array.ConvertAll(PolyCoefs, s => s.ToString())) : ""; } }
+
+        public bool Enabled
+        {
+            get { return _enabled; }
+            set { _enabled = value; FitEnableChanged?.Invoke(this, _enabled); }
+        }
+        private bool _enabled = false;
+
+        public event EventHandler<bool> FitEnableChanged;
 
         public void FitToData(double[] xData, double[] yData)
         {

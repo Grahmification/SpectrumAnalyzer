@@ -22,6 +22,17 @@ namespace SpectrumAnalyzer.Models
             series.Tag = tag;
             PlotSeries.Add(tag, series);
         }
+        public void RemoveSeries(PlotSeriesTag tag)
+        {
+            SetSeriesVisibility(tag, false);
+            PlotSeries.Remove(tag);
+        }
+        public void RemoveSeries(Series series)
+        {
+            var tag = (PlotSeriesTag)series.Tag;
+            RemoveSeries(tag);
+        }
+
         public void UpdateLineSeriesData(PlotSeriesTag series, List<Datapoint> data)
         {
             LineSeries dataline = (LineSeries)PlotSeries[series];

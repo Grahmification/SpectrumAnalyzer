@@ -11,8 +11,6 @@ namespace SpectrumAnalyzer.ViewModels
     {     
         public DataPlotVM Data { get; private set; }
 
-        public string DataFilePath { get; set; } = "";
-
         /// <summary>
         /// RelayCommand for <see cref="LoadData"/>
         /// </summary>
@@ -57,7 +55,7 @@ namespace SpectrumAnalyzer.ViewModels
             var vm = (DataImportVM)sender;
 
             Data.SetData(vm.SelectedXData, vm.SelectedYData, vm.SpreadSheet.FileName);
-            DataFilePath = vm.SpreadSheet.FilePath;
+            Data.Data.DataFilePath = vm.SpreadSheet.FilePath;
             vm.ImportDataRequest -= OnImportData;
         }
 

@@ -74,5 +74,23 @@ namespace SpectrumAnalyzer.Models
         {
             return components.Sum(s => s.Magnitude);
         }
+
+
+        public static  string[] GetExportHeader(string freqUnits = "hz", string timeUnits = "s", string magnitudeUnits = "-")
+        {
+            return new string[]
+            {
+                "Index",
+                string.Format("Frequency [{0}]", freqUnits),
+                string.Format("Period [{0}]", timeUnits),
+                string.Format("Magnitude [{0}]", magnitudeUnits),
+                "Phase",
+                "Contribution Fraction"
+            };
+        }
+        public string[] GetExportDataLine()
+        {
+            return new string[] { Index.ToString(), Frequency.ToString(), Period.ToString(), Magnitude.ToString(), Phase.ToString(), ContributionFraction.ToString() };
+        }
     }
 }

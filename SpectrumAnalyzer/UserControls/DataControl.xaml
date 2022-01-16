@@ -72,7 +72,7 @@
                         <Expander.Header>
                             <DockPanel VerticalAlignment="Stretch">
                                 <TextBlock Text="Data Detrending" VerticalAlignment="Center"/>
-                                <CheckBox IsChecked="{Binding Data.EnableFit}" Margin ="5" VerticalAlignment="Center"/>
+                                <CheckBox IsChecked="{Binding Data.PolyFit.Enabled}" Margin ="5" VerticalAlignment="Center"/>
                             </DockPanel>
                         </Expander.Header>
 

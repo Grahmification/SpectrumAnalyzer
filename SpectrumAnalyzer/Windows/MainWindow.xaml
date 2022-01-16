@@ -7,7 +7,7 @@
         xmlns:vm="clr-namespace:SpectrumAnalyzer.ViewModels"
         xmlns:UserControls="clr-namespace:SpectrumAnalyzer.UserControls"
         mc:Ignorable="d"
-        Title="Spectrum Analyzer" Height="450" Width="800" WindowStyle="SingleBorderWindow">
+        Title="Spectrum Analyzer" Height="450" Width="800" WindowStyle="SingleBorderWindow" WindowState="Maximized">
 
     <Window.DataContext>
         <vm:MainVM/>
@@ -34,7 +34,7 @@
         </TabControl>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Background="LightGray">
-            <TextBlock Margin="5,2,5,2" VerticalAlignment="Center" Text="{Binding DataFilePath}"/>
+            <TextBlock Margin="5,2,5,2" VerticalAlignment="Center" Text="{Binding Data.Data.DataFilePath}"/>
         </StackPanel>
 
     </Grid>

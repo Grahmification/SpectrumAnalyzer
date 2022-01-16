@@ -21,7 +21,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="350"/>
         </Grid.ColumnDefinitions>
 
         <Border Grid.Column="0" BorderBrush="Black" Background="LightGray" BorderThickness="1" Margin="2">
@@ -29,6 +29,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <Label Grid.Row="0" Content="FFT Components" FontWeight="Bold" FontSize="12" Padding="0"/>
@@ -53,6 +54,10 @@
                         <DataGridTextColumn Header="% Contribution" Binding="{Binding ContributionFraction, StringFormat={}{0:0.00}%}" IsReadOnly="True" ElementStyle="{StaticResource ContributionFractionDGCell}"/>
                     </DataGrid.Columns>
                 </DataGrid>
+
+                <StackPanel Grid.Row="2" Orientation="Horizontal" FlowDirection="RightToLeft">
+                    <Button Content="Export Components" Command="{Binding ExportAllComponentsCommand}" Padding="5"/>
+                </StackPanel>
             </Grid>
         </Border>
 
@@ -129,18 +134,28 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Grid.Column="0" Text="Interpolation: "/>
-                    <TextBox Grid.Column="1" Text="{Binding SelectedReconstruction.InterpolationFactor}" PreviewTextInput="NumberValidationTextBox"></TextBox>
+                    <TextBox Grid.Column="1" Text="{Binding PreviewReconstruction.InterpolationFactor}" PreviewTextInput="NumberValidationTextBox"></TextBox>
                 </Grid>
 
                 <DataGrid Grid.Row="3" Name="ReconstructionDG" Margin="5" Background="White" 
                               ItemsSource="{Binding Reconstructions}"
+                              SelectedItem="{Binding SelectedReconstruction}"
                               AlternationCount="{Binding SignalComponents.Count}"
                               Style="{StaticResource BlueDG}">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Width="*" Header="Name" Binding="{Binding Name}" IsReadOnly="True"/>
+                        <DataGridTextColumn Width="2*" Header="Name" Binding="{Binding Name}" IsReadOnly="True"/>
                         <DataGridTextColumn Width="*" Header="Components" Binding="{Binding Function.Curves.Count}" IsReadOnly="True"/>
                         <DataGridTextColumn Width="*" Header="Interpolation" Binding="{Binding InterpolationFactor}" IsReadOnly="False"/>
                     </DataGrid.Columns>
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Delete" Command="{Binding DeleteReconstructionCommand}"/>
+                            <Separator/>
+                            <MenuItem Header="Export Signal Components" Command="{Binding ExportReconstructionComponentsCommand}"/>
+                            <MenuItem Header="Export Points" Command="{Binding ExportReconstructionPointsCommand}"/>
+                            <MenuItem Header="Export Interpolated Points" Command="{Binding ExportReconstructionInterpolatedPointsCommand}"/>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
                 </DataGrid>
 
             </Grid>
