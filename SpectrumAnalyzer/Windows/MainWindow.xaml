@@ -23,8 +23,8 @@
         <StackPanel Grid.Row="0"  Orientation="Horizontal" Background="LightGray">
             <Button Content="Load Dataset" Command="{Binding LoadDataCommand}" Margin="2" />
         </StackPanel>
-
-        <TabControl Grid.Row="1" TabStripPlacement="Top">
+        
+        <TabControl Grid.Row="1" TabStripPlacement="Top" >
             <TabItem Header="Data Configuration">
                 <UserControls:DataControl DataContext="{Binding Data}"/>
             </TabItem>
