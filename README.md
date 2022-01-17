@@ -2,6 +2,11 @@
 
 Spectrum Analyzer is a piece of software written for performing fourier decomposition analysis on time series datasets. It includes basic data processing functionality and various visualization methods for interpreting fourier transform results.
 
+<p align="center">
+  <img src="./Docs/GUI Demo - Data Processing.png" alt="Data Processing GUI" width="300">
+  <img src="./Docs/GUI Demo - Reconstructions.png" alt="FFT Signal Reconstruction GUI" width="312">
+</p>
+
 #### License
 
 ![GitHub](https://img.shields.io/github/license/Grahmification/SpectrumAnalyzer) Spectrum Analyzer is available for free under the MIT license.
