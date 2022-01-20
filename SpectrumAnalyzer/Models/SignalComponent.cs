@@ -49,7 +49,6 @@ namespace SpectrumAnalyzer.Models
                 Phase = Math.Atan2(imaginary, real);
             }
         }
-
         public SignalComponent() { }
 
         public double GetYValue(double xValue)
@@ -64,18 +63,34 @@ namespace SpectrumAnalyzer.Models
             }
 
         }
-
         public void SetContributionFraction(double totalMagnitude)
         {
             ContributionFraction = Magnitude / totalMagnitude;
         }
+        public void UnwrapPhase(double previousPhase)
+        {
+            while(Phase - previousPhase > Math.PI)
+            {
+                Phase -= 2 * Math.PI;
+            }
 
+            while (previousPhase - Phase > Math.PI)
+            {
+                Phase += 2 * Math.PI;
+            }
+        }
+
+        public static void UnwrapPhases(IList<SignalComponent> components)
+        {
+            for(int i = 1; i< components.Count; i++)
+            {
+                components[i].UnwrapPhase(components[i - 1].Phase);
+            }
+        }
         public static double ComputeTotalMagnitude(IList<SignalComponent> components)
         {
             return components.Sum(s => s.Magnitude);
         }
-
-
         public static  string[] GetExportHeader(string freqUnits = "hz", string timeUnits = "s", string magnitudeUnits = "-")
         {
             return new string[]

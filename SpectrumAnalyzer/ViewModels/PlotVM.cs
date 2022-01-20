@@ -25,6 +25,11 @@ namespace SpectrumAnalyzer.ViewModels
             get { return Model.GetAxis(PlotModelManaged.YAxisPrimaryKey).Title; }
             set { Model.GetAxis(PlotModelManaged.YAxisPrimaryKey).Title = value; Model.InvalidatePlot(false); }
         }
+        public string AxisTitleSecondaryY
+        {
+            get { return Model.GetAxis(PlotModelManaged.YAxixSecondaryKey).Title; }
+            set { Model.GetAxis(PlotModelManaged.YAxixSecondaryKey).Title = value; Model.InvalidatePlot(false); }
+        }
 
         /// <summary>
         /// RelayCommand for <see cref="ResetZoom"/>

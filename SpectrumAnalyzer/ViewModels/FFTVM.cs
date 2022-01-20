@@ -57,24 +57,39 @@ namespace SpectrumAnalyzer.ViewModels
         {
             //-------------------- Frequency Plot --------------------------
 
+            FrequencySpectrumPlot.Model.Axes.Add(PlotModelManaged.AxisYSecondaryData());
             FrequencySpectrumPlot.TitlePrefix = "FFT Frequency Spectrum";
             FrequencySpectrumPlot.AxisTitlePrimaryX = "Frequency";
             FrequencySpectrumPlot.AxisTitlePrimaryY = "Magnitude";
+            FrequencySpectrumPlot.AxisTitleSecondaryY = "Phase [rad]";
 
-            var FFTFreqSpectrum = new LineSeries()
+            var FFTFreqMagnitude = new LineSeries()
             {
                 LineStyle = LineStyle.Solid,
                 MarkerType = MarkerType.Circle,
                 Color = OxyColors.Black,
-                Title = "FFT Frequency Spectrum",
+                Title = "FFT Magnitude",
                 YAxisKey = "Primary Y",
                 CanTrackerInterpolatePoints = false,
                 ItemsSource = SignalComponents,
                 DataFieldX = "Frequency",
-                DataFieldY = "Magnitude"
+                DataFieldY = "Magnitude",                
             };
 
-            var FFTFreqSpectrumHightlight = new LineSeries()
+            var FFTFreqPhase = new LineSeries()
+            {
+                LineStyle = LineStyle.Solid,
+                MarkerType = MarkerType.Circle,
+                Color = OxyColors.Blue,
+                Title = "FFT Phase",
+                YAxisKey = "Secondary Y",
+                CanTrackerInterpolatePoints = false,
+                ItemsSource = SignalComponents,
+                DataFieldX = "Frequency",
+                DataFieldY = "Phase"
+            };
+
+            var FFTFreqMagnitudeHightlight = new LineSeries()
             {
                 LineStyle = LineStyle.None,
                 MarkerType = MarkerType.Circle,
@@ -88,26 +103,55 @@ namespace SpectrumAnalyzer.ViewModels
                 DataFieldY = "Magnitude",
             };
 
-            FrequencySpectrumPlot.Model.AddSeries(FFTFreqSpectrum, PlotSeriesTag.FFTSpectrumFrequency);
-            FrequencySpectrumPlot.Model.AddSeries(FFTFreqSpectrumHightlight, PlotSeriesTag.FFTSpectrumHighlight);
+            var FFTFreqPhaseHightlight = new LineSeries()
+            {
+                LineStyle = LineStyle.None,
+                MarkerType = MarkerType.Triangle,
+                Title = "Selected Point",
+                YAxisKey = "Secondary Y",
+                CanTrackerInterpolatePoints = false,
+                Color = OxyColors.Red,
+                MarkerSize = 5,
+                ItemsSource = SelectedComponents,
+                DataFieldX = "Frequency",
+                DataFieldY = "Phase",
+            };
+
+            FrequencySpectrumPlot.Model.AddSeries(FFTFreqMagnitude, PlotSeriesTag.FFTSpectrumFrequency);
+            FrequencySpectrumPlot.Model.AddSeries(FFTFreqMagnitudeHightlight, PlotSeriesTag.FFTSpectrumHighlight);
+            FrequencySpectrumPlot.Model.AddSeries(FFTFreqPhase, (PlotSeriesTag)7);
+            FrequencySpectrumPlot.Model.AddSeries(FFTFreqPhaseHightlight, (PlotSeriesTag)8);
 
             //-------------------- Period Plot --------------------------
+
+            PeriodSpectrumPlot.Model.Axes.Add(PlotModelManaged.AxisYSecondaryData());
 
             PeriodSpectrumPlot.TitlePrefix = "FFT Period Spectrum";
             PeriodSpectrumPlot.AxisTitlePrimaryX = "Period";
             PeriodSpectrumPlot.AxisTitlePrimaryY = "Magnitude";
+            PeriodSpectrumPlot.AxisTitleSecondaryY = "Phase [rad]";
 
-            var FFTPeriodSpectrum = new LineSeries()
+            var FFTPeriodMagnitude = new LineSeries()
             {
                 LineStyle = LineStyle.Solid,
                 MarkerType = MarkerType.Circle,
                 Color = OxyColors.Black,
-                Title = "FFT Period Spectrum",
+                Title = "FFT Magnitude",
                 YAxisKey = "Primary Y",
                 CanTrackerInterpolatePoints = false,
             };
 
-            var FFTPeriodSpectrumHightlight = new LineSeries()
+            var FFTPeriodPhase = new LineSeries()
+            {
+                LineStyle = LineStyle.Solid,
+                MarkerType = MarkerType.Circle,
+                Color = OxyColors.Blue,
+                Title = "FFT Phase",
+                YAxisKey = "Secondary Y",
+                CanTrackerInterpolatePoints = false,
+            };
+
+            var FFTPeriodMagnitudeHightlight = new LineSeries()
             {
                 LineStyle = LineStyle.None,
                 MarkerType = MarkerType.Circle,
@@ -121,8 +165,24 @@ namespace SpectrumAnalyzer.ViewModels
                 DataFieldY = "Magnitude"
             };
 
-            PeriodSpectrumPlot.Model.AddSeries(FFTPeriodSpectrum, PlotSeriesTag.FFTSpectrumPeriod);
-            PeriodSpectrumPlot.Model.AddSeries(FFTPeriodSpectrumHightlight, PlotSeriesTag.FFTSpectrumHighlight);
+            var FFTPeriodPhaseHightlight = new LineSeries()
+            {
+                LineStyle = LineStyle.None,
+                MarkerType = MarkerType.Triangle,
+                Title = "Selected Point",
+                YAxisKey = "Secondary Y",
+                CanTrackerInterpolatePoints = false,
+                Color = OxyColors.Red,
+                MarkerSize = 5,
+                ItemsSource = SelectedComponents,
+                DataFieldX = "Period",
+                DataFieldY = "Phase"
+            };
+
+            PeriodSpectrumPlot.Model.AddSeries(FFTPeriodMagnitude, PlotSeriesTag.FFTSpectrumPeriod);
+            PeriodSpectrumPlot.Model.AddSeries(FFTPeriodMagnitudeHightlight, PlotSeriesTag.FFTSpectrumHighlight);
+            PeriodSpectrumPlot.Model.AddSeries(FFTPeriodPhase, (PlotSeriesTag)7);
+            PeriodSpectrumPlot.Model.AddSeries(FFTPeriodPhaseHightlight, (PlotSeriesTag)8);
 
             //-------------------- Reconstruction Plot --------------------------
 
@@ -183,15 +243,23 @@ namespace SpectrumAnalyzer.ViewModels
             var periodLine = (LineSeries)PeriodSpectrumPlot.Model.PlotSeries[PlotSeriesTag.FFTSpectrumPeriod];
             periodLine.Points.Clear();
 
+            var periodPhaseLine = (LineSeries)PeriodSpectrumPlot.Model.PlotSeries[(PlotSeriesTag)7];
+            periodPhaseLine.Points.Clear();
+
             //must do this way because we cant plot the dc offset as being huge
             foreach (SignalComponent component in components)
             {
                 if(component.Period != 0)
+                {
                     periodLine.Points.Add(new DataPoint(component.Period, component.Magnitude));
+                    periodPhaseLine.Points.Add(new DataPoint(component.Period, component.Phase));
+                }
             }
 
+            FrequencySpectrumPlot.Model.SetSeriesVisibility((PlotSeriesTag)7, true);
             FrequencySpectrumPlot.Model.SetSeriesVisibility(PlotSeriesTag.FFTSpectrumFrequency, true);
             PeriodSpectrumPlot.Model.SetSeriesVisibility(PlotSeriesTag.FFTSpectrumPeriod, true);
+            PeriodSpectrumPlot.Model.SetSeriesVisibility((PlotSeriesTag)7, true);
 
             FrequencySpectrumPlot.ResetZoom(null);
             PeriodSpectrumPlot.ResetZoom(null);
@@ -282,7 +350,11 @@ namespace SpectrumAnalyzer.ViewModels
             }
 
             FrequencySpectrumPlot.Model.SetSeriesVisibility(PlotSeriesTag.FFTSpectrumHighlight, selected);
+            FrequencySpectrumPlot.Model.SetSeriesVisibility((PlotSeriesTag)8, selected);
+
             PeriodSpectrumPlot.Model.SetSeriesVisibility(PlotSeriesTag.FFTSpectrumHighlight, selected);
+            PeriodSpectrumPlot.Model.SetSeriesVisibility((PlotSeriesTag)8, selected);
+
             ReconstructionPlot.Model.SetSeriesVisibility(PlotSeriesTag.FitLine, selected);
 
             FrequencySpectrumPlot.Model.InvalidatePlot(true);

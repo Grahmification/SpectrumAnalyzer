@@ -113,6 +113,8 @@ namespace SpectrumAnalyzer.Models
             for (int i = 0; i < output.Count; i++)
                 output[i].SetContributionFraction(magnitudeSum);
 
+            SignalComponent.UnwrapPhases(output);
+
             return output;
         }
 
