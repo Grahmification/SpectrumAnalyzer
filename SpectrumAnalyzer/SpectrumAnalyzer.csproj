@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <Content Include="heart-monitor_128.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
