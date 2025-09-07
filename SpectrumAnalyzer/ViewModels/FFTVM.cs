@@ -13,7 +13,7 @@ namespace SpectrumAnalyzer.ViewModels
     {
         public DatapointCollection Dataset { get; set; } = new DatapointCollection();
         public ObservableCollection<SignalReconstructionVM> Reconstructions { get; set; } = new ObservableCollection<SignalReconstructionVM>();
-        public SignalReconstructionVM SelectedReconstruction { get; set; } = null;
+        public SignalReconstructionVM? SelectedReconstruction { get; set; } = null;
         public SignalReconstructionVM PreviewReconstruction { get; private set; } = new SignalReconstructionVM("Reconstruction Preview");
 
         public string NewReconstructionName { get; set; } = "Reconstruction 1";
@@ -25,11 +25,11 @@ namespace SpectrumAnalyzer.ViewModels
         public PlotVM ReconstructionPlot { get; set; } = new PlotVM();
         public UnitsVM Units { get; private set; } = new UnitsVM();
 
-        public event EventHandler<SignalReconstructionVM> ExportReconstructionComponentsRequest;
+        public event EventHandler<SignalReconstructionVM?>? ExportReconstructionComponentsRequest;
 
-        public event EventHandler<SignalReconstructionVM> ExportReconstructionPointsRequest;
+        public event EventHandler<SignalReconstructionVM?>? ExportReconstructionPointsRequest;
         
-        public event EventHandler<SignalReconstructionVM> ExportReconstructionInterpolatedPointsRequest;
+        public event EventHandler<SignalReconstructionVM?>? ExportReconstructionInterpolatedPointsRequest;
 
         public ICommand AddReconstructionCommand { get; private set; }
         public ICommand DeleteReconstructionCommand { get; private set; }
@@ -267,7 +267,7 @@ namespace SpectrumAnalyzer.ViewModels
             PeriodSpectrumPlot.Model.InvalidatePlot(true);
         }
 
-        public void AddReconstruction(object parameter)
+        public void AddReconstruction(object? parameter)
         {
             var recon = new SignalReconstructionVM(NewReconstructionName);
             recon.InterpolationFactor = PreviewReconstruction.InterpolationFactor;
@@ -291,18 +291,20 @@ namespace SpectrumAnalyzer.ViewModels
             ReconstructionPlot.Model.SetSeriesVisibility((PlotSeriesTag)(Reconstructions.Count + 200), true);
             ReconstructionPlot.Model.InvalidatePlot(true);
         }
-        public void DeleteReconstruction(object parameter)
+        public void DeleteReconstruction(object? parameter)
         {
             var recon = SelectedReconstruction;
-            
-            foreach (LineSeries series in ReconstructionPlot.Model.PlotSeries.Values)
+            if (recon != null)
             {
-                if (series.Title == recon.Name)
-                    ReconstructionPlot.Model.RemoveSeries(series);
-            }
+                foreach (LineSeries series in ReconstructionPlot.Model.PlotSeries.Values)
+                {
+                    if (series.Title == recon.Name)
+                        ReconstructionPlot.Model.RemoveSeries(series);
+                }
 
-            Reconstructions.Remove(recon);
-            ReconstructionPlot.Model.InvalidatePlot(true);
+                Reconstructions.Remove(recon);
+                ReconstructionPlot.Model.InvalidatePlot(true);
+            }
         }
         public bool AreSignalComponentsSelected()
         {
@@ -327,7 +329,7 @@ namespace SpectrumAnalyzer.ViewModels
             return AreSignalComponentsSelected() && NewReconstructionNameUnique();
         }
 
-        public void ExportAllComponents(object parameter)
+        public void ExportAllComponents(object? parameter)
         {
             var recon = new SignalReconstructionVM("Full Spectrum");
             recon.PopulateComponents(SignalComponents);
@@ -336,7 +338,7 @@ namespace SpectrumAnalyzer.ViewModels
             ExportReconstructionComponentsRequest?.Invoke(this, recon);
         }
 
-        private void OnSignalComponentsSelected(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnSignalComponentsSelected(object? sender, NotifyCollectionChangedEventArgs e)
         {
             bool selected = false;
             
@@ -361,7 +363,7 @@ namespace SpectrumAnalyzer.ViewModels
             PeriodSpectrumPlot.Model.InvalidatePlot(true);
             ReconstructionPlot.Model.InvalidatePlot(true);
         }
-        public void OnUnitsUpdate(object sender, EventArgs e)
+        public void OnUnitsUpdate(object? sender, EventArgs e)
         {
             FrequencySpectrumPlot.TitleSuffix = Units.DataTitle;
             FrequencySpectrumPlot.AxisTitlePrimaryX = Units.SelectedXUnit.FreqString;

@@ -23,8 +23,10 @@ namespace SpectrumAnalyzer.Models
             Y = y;
         }
 
-        public int CompareTo(Datapoint other)
+        public int CompareTo(Datapoint? other)
         {
+            if (other == null) return 0;
+
             return X.CompareTo(other.X);
         }
 

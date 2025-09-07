@@ -17,7 +17,7 @@ namespace SpectrumAnalyzer.ViewModels
         }
         private bool _enabled = false;
 
-        public event EventHandler<bool> FitEnableChanged;
+        public event EventHandler<bool>? FitEnableChanged;
 
         public void FitToData(double[] xData, double[] yData)
         {

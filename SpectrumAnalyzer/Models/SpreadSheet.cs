@@ -59,7 +59,7 @@ namespace SpectrumAnalyzer.Models
             int col = (int)colStr.Select((t, i) => (colStr[i] - 64) * Math.Pow(26, colStr.Length - i - 1)).Sum();
             var row = int.Parse(match.Groups["row"].ToString());
 
-            return workSheet.Rows[row-1][col-1].ToString();
+            return workSheet.Rows[row - 1][col - 1].ToString() ?? "";
         }
         private void PrepareData(IExcelDataReader reader)
         {

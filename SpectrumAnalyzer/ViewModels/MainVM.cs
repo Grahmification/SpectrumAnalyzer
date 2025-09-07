@@ -18,11 +18,6 @@ namespace SpectrumAnalyzer.ViewModels
 
         public MainVM()
         {
-            InitializeVMs();
-        }
-
-        private void InitializeVMs()
-        {
             Data = new DataPlotVM();
 
             LoadDataCommand = new RelayCommand<object>(LoadData);
@@ -50,14 +45,16 @@ namespace SpectrumAnalyzer.ViewModels
             }
         }
 
-        public void OnImportData(object sender, EventArgs e)
+        public void OnImportData(object? sender, EventArgs e)
         {
-            var vm = (DataImportVM)sender;
+            if (sender != null)
+            {
+                var vm = (DataImportVM)sender;
 
-            Data.SetData(vm.SelectedXData, vm.SelectedYData, vm.SpreadSheet.FileName);
-            Data.Data.DataFilePath = vm.SpreadSheet.FilePath;
-            vm.ImportDataRequest -= OnImportData;
+                Data.SetData(vm.SelectedXData, vm.SelectedYData, vm.SpreadSheet?.FileName ?? "");
+                Data.Data.DataFilePath = vm.SpreadSheet?.FilePath ?? "";
+                vm.ImportDataRequest -= OnImportData;
+            }
         }
-
     }
 }

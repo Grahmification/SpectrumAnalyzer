@@ -27,8 +27,8 @@ namespace SpectrumAnalyzer.ViewModels
 
         public Dictionary<double, SignalComponent> FFTData { get; private set; } = new Dictionary<double, SignalComponent>();
 
-        public event EventHandler FitCompleted;
-        public event EventHandler FFTCompleted;
+        public event EventHandler? FitCompleted;
+        public event EventHandler? FFTCompleted;
 
         /// <summary>
         /// RelayCommand for <see cref="ComputeFFT"/>
@@ -62,7 +62,7 @@ namespace SpectrumAnalyzer.ViewModels
             OnPropertyChanged("MinPeriod");
             OnPropertyChanged("MaxPeriod");
         }
-        public void ComputeFit(object parameter)
+        public void ComputeFit(object? parameter)
         {
             PolyFit.FitToData(RawData.XValues.ToArray(), RawData.YValues.ToArray());
 
@@ -74,7 +74,7 @@ namespace SpectrumAnalyzer.ViewModels
 
             FitCompleted?.Invoke(this, new EventArgs());
         }
-        public void ComputeFFT(object parameter)
+        public void ComputeFFT(object? parameter)
         {
             var FFToutput = FFT.computeFFTComponents(FFTInputData.GetFFTDataFormat());
 

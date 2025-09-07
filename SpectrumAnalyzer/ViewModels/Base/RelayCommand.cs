@@ -10,18 +10,18 @@ namespace SpectrumAnalyzer.ViewModels
         /// </summary>
         private Action<T> mAction;
 
-        private Func<bool> canExecuteEvaluator;
+        private Func<bool>? canExecuteEvaluator;
 
         /// <summary>
         /// The event that's fired when CanExecute value has changed
         /// </summary>
-        public event EventHandler CanExecuteChanged
+        public event EventHandler? CanExecuteChanged
         {
             add { CommandManager.RequerySuggested += value; }
             remove { CommandManager.RequerySuggested -= value; }
         }
 
-        public RelayCommand(Action<T> action, Func<bool> canExecute = null)
+        public RelayCommand(Action<T> action, Func<bool>? canExecute = null)
         {
             mAction = action;
             canExecuteEvaluator = canExecute;
@@ -32,7 +32,7 @@ namespace SpectrumAnalyzer.ViewModels
         /// </summary>
         /// <param name="parameter"></param>
         /// <returns></returns>
-        public bool CanExecute(object parameter)
+        public bool CanExecute(object? parameter)
         {
             if (this.canExecuteEvaluator == null)
             {
@@ -49,9 +49,16 @@ namespace SpectrumAnalyzer.ViewModels
         /// Runs the action
         /// </summary>
         /// <param name="parameter"></param>
-        public void Execute(object parameter)
+        public void Execute(object? parameter)
         {
-            mAction((T)parameter);
+            if (parameter == null)
+            {
+                mAction((T)new object());
+            }
+            else
+            {
+                mAction((T)parameter);
+            }
         }
 
     }

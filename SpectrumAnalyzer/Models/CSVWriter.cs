@@ -7,7 +7,7 @@ namespace SpectrumAnalyzer.Models
 {
     public class CSVWriter
     {
-        public StreamWriter Writer { get; private set; } = null;
+        public StreamWriter Writer { get; private set; }
         public Char Delimiter { get; set; } = ',';
 
         public CSVWriter(string folder, string fileName)

@@ -61,7 +61,7 @@ namespace SpectrumAnalyzer.ViewModels
             Model.GetAxis(PlotModelManaged.YAxisPrimaryKey).Title = YTitle;
             Model.InvalidatePlot(false);
         }
-        public void ResetZoom(object parameter)
+        public void ResetZoom(object? parameter)
         {
             Model.ResetZoom();
         }
