@@ -49,12 +49,15 @@ namespace SpectrumAnalyzer.ViewModels
         public void SetData(double[] XData, double[] YData)
         {
             RawData.Clear();
+            var dataPoints = new List<Datapoint>();
             
             for (int i = 0; i < XData.Length; i++)
             {
-                RawData.Add(new Datapoint(XData[i], YData[i]));
+                dataPoints.Add(new Datapoint(XData[i], YData[i]));
             }
 
+            // Set data at once to avoid raising a bunch of CollectionChanged events
+            RawData.SetData(dataPoints);
             RawData.ZeroNormalizeXValues();
 
             OnPropertyChanged("MinFrequency");

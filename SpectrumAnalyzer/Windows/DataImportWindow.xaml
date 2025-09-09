@@ -37,7 +37,6 @@
         </StackPanel>
 
         <DataGrid Grid.Row="1" ItemsSource="{Binding SelectedSheet}"
-                  AlternationCount="{Binding SelectedSheet.Rows.Count}"
                   CanUserAddRows="False"
                   CanUserDeleteRows="False"
                   SelectionMode="Extended"
@@ -47,7 +46,7 @@
                   CanUserReorderColumns="False"
                   CanUserSortColumns="False"
                   CanUserResizeRows="False"
-                  EnableRowVirtualization="False"
+                  EnableRowVirtualization="True"
                   Width="Auto"
                   GridLinesVisibility="All"
                   ColumnWidth="Auto">

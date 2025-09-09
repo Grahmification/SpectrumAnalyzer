@@ -36,7 +36,7 @@ namespace SpectrumAnalyzer
         private void DataGrid_OnLoadingRow(object sender, DataGridRowEventArgs e)
         {
             DataGrid dg = (DataGrid)sender;
-            e.Row.Header = e.Row.AlternationIndex +1;
+            e.Row.Header = dg.Items.IndexOf(e.Row.Item) + 1;
         }
 
 
