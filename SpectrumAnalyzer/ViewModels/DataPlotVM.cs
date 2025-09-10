@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 using Microsoft.Win32;
 using OxyPlot;
 using OxyPlot.Series;

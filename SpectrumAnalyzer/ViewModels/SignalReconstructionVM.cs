@@ -1,6 +1,4 @@
-﻿using SpectrumAnalyzer.Models;
-using System;
-using System.Collections.Generic;
+using SpectrumAnalyzer.Models;
 
 namespace SpectrumAnalyzer.ViewModels
 {

@@ -1,6 +1,3 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
 namespace SpectrumAnalyzer.Models
 {
     public class CompositeXYFunction : IXYFunction

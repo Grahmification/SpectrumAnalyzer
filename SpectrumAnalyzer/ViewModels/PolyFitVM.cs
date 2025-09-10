@@ -1,5 +1,4 @@
-﻿using SpectrumAnalyzer.Models;
-using System;
+using SpectrumAnalyzer.Models;
 
 namespace SpectrumAnalyzer.ViewModels
 {

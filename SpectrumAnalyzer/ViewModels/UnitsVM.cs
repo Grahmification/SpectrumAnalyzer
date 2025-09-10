@@ -1,5 +1,4 @@
-﻿using SpectrumAnalyzer.Models;
-using System;
+using SpectrumAnalyzer.Models;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 

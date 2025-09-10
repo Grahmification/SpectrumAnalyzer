@@ -1,5 +1,3 @@
-﻿using System.Collections.Generic;
-
 namespace SpectrumAnalyzer.Models
 {
     public class XAxisUnits

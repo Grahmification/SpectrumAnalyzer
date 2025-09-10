@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using ExcelDataReader;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace SpectrumAnalyzer.Models

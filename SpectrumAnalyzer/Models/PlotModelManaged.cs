@@ -1,10 +1,8 @@
-﻿using OxyPlot;
+using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Legends;
 using OxyPlot.Series;
 using OxyPlot.Wpf;
-using System;
-using System.Collections.Generic;
 
 namespace SpectrumAnalyzer.Models
 {
