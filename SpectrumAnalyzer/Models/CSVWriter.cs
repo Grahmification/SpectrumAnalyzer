@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 
 namespace SpectrumAnalyzer.Models
 {
@@ -37,11 +37,11 @@ namespace SpectrumAnalyzer.Models
         }
         public void WriteMetaData(string title, string value)
         {
-            WriteLine(new string[] { title, value });
+            WriteLine([title, value]);
         }
         public void WriteDataStartLine()
         {
-            WriteLine(new string[] { "#### DATA STARTS HERE ####" });
+            WriteLine(["#### DATA STARTS HERE ####"]);
         }
     }
 }

@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 
 namespace SpectrumAnalyzer.Models
 {
@@ -68,7 +68,7 @@ namespace SpectrumAnalyzer.Models
             if (interpolationFactor < 0)
                 interpolationFactor = 0;
             
-            List<double> output = new List<double>();
+            List<double> output = [];
 
             for(int i = 0; i<inputVals.Count-1; i++)
             {

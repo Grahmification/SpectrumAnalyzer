@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using System.IO;
 using ExcelDataReader;
 using System.Text.RegularExpressions;
@@ -7,8 +7,8 @@ namespace SpectrumAnalyzer.Models
 {
     public class SpreadSheet
     {
-        public Dictionary<string, DataTable> WorkSheets { get; private set; } = new Dictionary<string, DataTable>();
-        public List<string> WorkSheetNames { get { return WorkSheets.Keys.ToList(); } }
+        public Dictionary<string, DataTable> WorkSheets { get; private set; } = [];
+        public List<string> WorkSheetNames { get { return [.. WorkSheets.Keys]; } }
 
         public string FilePath { get; private set; } = "";
         public string FileName { get { return Path.GetFileNameWithoutExtension(FilePath); } }

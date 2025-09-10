@@ -1,4 +1,4 @@
-using SpectrumAnalyzer.Models;
+﻿using SpectrumAnalyzer.Models;
 
 namespace SpectrumAnalyzer.ViewModels
 {
@@ -6,8 +6,8 @@ namespace SpectrumAnalyzer.ViewModels
     {
         public Polynomial PolyFunction { get; private set; } = new Polynomial();
         public int PolyFitOrder { get; set; } = 1;
-        public double[] PolyCoefs { get; private set; } = new double[] { };
-        public string PolyCoefsString { get {return Enabled? string.Join(",", Array.ConvertAll(PolyCoefs, s => s.ToString())) : ""; } }
+        public double[] PolyCoefs { get; private set; } = [];
+        public string PolyCoefsString => Enabled? string.Join(",", Array.ConvertAll(PolyCoefs, s => s.ToString())) : "";
 
         public bool Enabled
         {

@@ -7,8 +7,6 @@ namespace SpectrumAnalyzer.ViewModels
 {
     public class DataImportVM : ObservableObject
     {
-
-
         public SpreadSheet? SpreadSheet { get; private set; }
         public string SelectedSheetName { get; set; } = "";
         public DataTable? SelectedSheet

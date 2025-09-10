@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Windows.Input;
 using OxyPlot;
@@ -9,14 +9,14 @@ namespace SpectrumAnalyzer.ViewModels
 {
     public class FFTVM : ObservableObject
     {
-        public DatapointCollection Dataset { get; set; } = new DatapointCollection();
-        public ObservableCollection<SignalReconstructionVM> Reconstructions { get; set; } = new ObservableCollection<SignalReconstructionVM>();
+        public DatapointCollection Dataset { get; set; } = [];
+        public ObservableCollection<SignalReconstructionVM> Reconstructions { get; set; } = [];
         public SignalReconstructionVM? SelectedReconstruction { get; set; } = null;
         public SignalReconstructionVM PreviewReconstruction { get; private set; } = new SignalReconstructionVM("Reconstruction Preview");
 
         public string NewReconstructionName { get; set; } = "Reconstruction 1";
-        public ObservableCollection<SignalComponent> SignalComponents { get; set; } = new ObservableCollection<SignalComponent>();
-        public SelectedItemCollection<SignalComponent> SelectedComponents { get; set; } = new SelectedItemCollection<SignalComponent>();
+        public ObservableCollection<SignalComponent> SignalComponents { get; set; } = [];
+        public SelectedItemCollection<SignalComponent> SelectedComponents { get; set; } = [];
 
         public PlotVM FrequencySpectrumPlot { get; set; } = new PlotVM();
         public PlotVM PeriodSpectrumPlot { get; set; } = new PlotVM();

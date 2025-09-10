@@ -13,7 +13,7 @@ namespace SpectrumAnalyzer.ViewModels
         
         private string _titleSuffix = "";
         public string TitleSuffix { get { return _titleSuffix; } set { _titleSuffix = value; UpdateTitle(); } }
-        public string Title { get { return TitleSuffix == "" ? TitlePrefix : string.Format("{0}: {1}", TitlePrefix, TitleSuffix); } }
+        public string Title => TitleSuffix == "" ? TitlePrefix : $"{TitlePrefix}: {TitleSuffix}";
 
         public string AxisTitlePrimaryX 
         {

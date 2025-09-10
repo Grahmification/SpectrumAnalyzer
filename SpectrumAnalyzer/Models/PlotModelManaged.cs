@@ -1,4 +1,4 @@
-using OxyPlot;
+﻿using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Legends;
 using OxyPlot.Series;
@@ -13,7 +13,7 @@ namespace SpectrumAnalyzer.Models
         public const string YAxixSecondaryKey = "Secondary Y";
 
 
-        public Dictionary<PlotSeriesTag, Series> PlotSeries = new Dictionary<PlotSeriesTag, Series>();
+        public Dictionary<PlotSeriesTag, Series> PlotSeries = [];
 
         public void AddSeries(Series series, PlotSeriesTag tag)
         {

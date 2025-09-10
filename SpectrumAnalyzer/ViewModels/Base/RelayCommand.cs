@@ -1,4 +1,4 @@
-using System.Windows.Input;
+﻿using System.Windows.Input;
 
 namespace SpectrumAnalyzer.ViewModels
 {
@@ -7,9 +7,9 @@ namespace SpectrumAnalyzer.ViewModels
         /// <summary>
         /// The action to run
         /// </summary>
-        private Action<T> mAction;
+        private readonly Action<T> mAction;
 
-        private Func<bool>? canExecuteEvaluator;
+        private readonly Func<bool>? canExecuteEvaluator;
 
         /// <summary>
         /// The event that's fired when CanExecute value has changed
