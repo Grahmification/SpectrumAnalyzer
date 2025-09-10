@@ -1,7 +1,4 @@
 ﻿using OxyPlot;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace SpectrumAnalyzer.Models
 {
@@ -23,8 +20,10 @@ namespace SpectrumAnalyzer.Models
             Y = y;
         }
 
-        public int CompareTo(Datapoint other)
+        public int CompareTo(Datapoint? other)
         {
+            if (other == null) return 0;
+
             return X.CompareTo(other.X);
         }
 

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace SpectrumAnalyzer.Models
+﻿namespace SpectrumAnalyzer.Models
 {
     public class SignalComponent : IXYFunction
     {
@@ -96,16 +92,16 @@ namespace SpectrumAnalyzer.Models
             return new string[]
             {
                 "Index",
-                string.Format("Frequency [{0}]", freqUnits),
-                string.Format("Period [{0}]", timeUnits),
-                string.Format("Magnitude [{0}]", magnitudeUnits),
+                $"Frequency [{freqUnits}]", 
+                $"Period [{timeUnits}]",
+                $"Magnitude [{magnitudeUnits}]",
                 "Phase",
                 "Contribution Fraction"
             };
         }
         public string[] GetExportDataLine()
         {
-            return new string[] { Index.ToString(), Frequency.ToString(), Period.ToString(), Magnitude.ToString(), Phase.ToString(), ContributionFraction.ToString() };
+            return [Index.ToString(), Frequency.ToString(), Period.ToString(), Magnitude.ToString(), Phase.ToString(), ContributionFraction.ToString()];
         }
     }
 }

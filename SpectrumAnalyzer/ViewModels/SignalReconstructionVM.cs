@@ -1,14 +1,12 @@
 ﻿using SpectrumAnalyzer.Models;
-using System;
-using System.Collections.Generic;
 
 namespace SpectrumAnalyzer.ViewModels
 {
     public class SignalReconstructionVM : ObservableObject
     {
         public CompositeXYFunction Function { get; private set; } = new CompositeXYFunction();
-        public DatapointCollection Points { get; private set; } = new DatapointCollection();
-        public DatapointCollection NonInterpolatedPoints { get; private set; } = new DatapointCollection();
+        public DatapointCollection Points { get; private set; } = [];
+        public DatapointCollection NonInterpolatedPoints { get; private set; } = [];
 
         private int _interpolationFactor = 0;
         public int InterpolationFactor 
@@ -44,7 +42,7 @@ namespace SpectrumAnalyzer.ViewModels
 
         private void PopulateInterpolatedPoints()
         {
-            List<double> values = new List<double>(DatapointCollection.InterpolateList(NonInterpolatedPoints.XValues, _interpolationFactor));
+            List<double> values = new(DatapointCollection.InterpolateList(NonInterpolatedPoints.XValues, _interpolationFactor));
             Points.SetData(Function.ComputeFunction(values.ToArray()));
         }
     }

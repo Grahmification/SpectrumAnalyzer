@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using Microsoft.Win32;
 using SpectrumAnalyzer.Models;
 
@@ -17,11 +14,6 @@ namespace SpectrumAnalyzer.ViewModels
         public ICommand LoadDataCommand { get; private set; }
 
         public MainVM()
-        {
-            InitializeVMs();
-        }
-
-        private void InitializeVMs()
         {
             Data = new DataPlotVM();
 
@@ -50,14 +42,16 @@ namespace SpectrumAnalyzer.ViewModels
             }
         }
 
-        public void OnImportData(object sender, EventArgs e)
+        public void OnImportData(object? sender, EventArgs e)
         {
-            var vm = (DataImportVM)sender;
+            if (sender != null)
+            {
+                var vm = (DataImportVM)sender;
 
-            Data.SetData(vm.SelectedXData, vm.SelectedYData, vm.SpreadSheet.FileName);
-            Data.Data.DataFilePath = vm.SpreadSheet.FilePath;
-            vm.ImportDataRequest -= OnImportData;
+                Data.SetData(vm.SelectedXData, vm.SelectedYData, vm.SpreadSheet?.FileName ?? "");
+                Data.Data.DataFilePath = vm.SpreadSheet?.FilePath ?? "";
+                vm.ImportDataRequest -= OnImportData;
+            }
         }
-
     }
 }

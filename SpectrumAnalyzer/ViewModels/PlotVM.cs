@@ -13,7 +13,7 @@ namespace SpectrumAnalyzer.ViewModels
         
         private string _titleSuffix = "";
         public string TitleSuffix { get { return _titleSuffix; } set { _titleSuffix = value; UpdateTitle(); } }
-        public string Title { get { return TitleSuffix == "" ? TitlePrefix : string.Format("{0}: {1}", TitlePrefix, TitleSuffix); } }
+        public string Title => TitleSuffix == "" ? TitlePrefix : $"{TitlePrefix}: {TitleSuffix}";
 
         public string AxisTitlePrimaryX 
         {
@@ -61,7 +61,7 @@ namespace SpectrumAnalyzer.ViewModels
             Model.GetAxis(PlotModelManaged.YAxisPrimaryKey).Title = YTitle;
             Model.InvalidatePlot(false);
         }
-        public void ResetZoom(object parameter)
+        public void ResetZoom(object? parameter)
         {
             Model.ResetZoom();
         }

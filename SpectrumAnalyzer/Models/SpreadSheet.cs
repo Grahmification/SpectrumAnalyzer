@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using System.IO;
 using ExcelDataReader;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace SpectrumAnalyzer.Models
 {
     public class SpreadSheet
     {
-        public Dictionary<string, DataTable> WorkSheets { get; private set; } = new Dictionary<string, DataTable>();
-        public List<string> WorkSheetNames { get { return WorkSheets.Keys.ToList(); } }
+        public Dictionary<string, DataTable> WorkSheets { get; private set; } = [];
+        public List<string> WorkSheetNames { get { return [.. WorkSheets.Keys]; } }
 
         public string FilePath { get; private set; } = "";
         public string FileName { get { return Path.GetFileNameWithoutExtension(FilePath); } }
@@ -59,7 +56,7 @@ namespace SpectrumAnalyzer.Models
             int col = (int)colStr.Select((t, i) => (colStr[i] - 64) * Math.Pow(26, colStr.Length - i - 1)).Sum();
             var row = int.Parse(match.Groups["row"].ToString());
 
-            return workSheet.Rows[row-1][col-1].ToString();
+            return workSheet.Rows[row - 1][col - 1].ToString() ?? "";
         }
         private void PrepareData(IExcelDataReader reader)
         {

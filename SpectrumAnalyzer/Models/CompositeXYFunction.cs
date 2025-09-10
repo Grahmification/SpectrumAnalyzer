@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace SpectrumAnalyzer.Models
+﻿namespace SpectrumAnalyzer.Models
 {
     public class CompositeXYFunction : IXYFunction
     {
@@ -9,7 +6,7 @@ namespace SpectrumAnalyzer.Models
 
         public CompositeXYFunction()
         {
-            Curves = new List<IXYFunction>();
+            Curves = [];
         }
         public double GetYValue(double xValue)
         { 

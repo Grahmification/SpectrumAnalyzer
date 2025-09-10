@@ -14,9 +14,9 @@ namespace SpectrumAnalyzer.ViewModels
         /// <summary>
         /// Event gets fired when any child property value gets changed
         /// </summary>    
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected void OnPropertyChanged([CallerMemberName] string name = null)
+        protected void OnPropertyChanged([CallerMemberName] string? name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }

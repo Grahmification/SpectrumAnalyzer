@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿using System.IO;
 
 namespace SpectrumAnalyzer.Models
 {
     public class CSVWriter
     {
-        public StreamWriter Writer { get; private set; } = null;
+        public StreamWriter Writer { get; private set; }
         public Char Delimiter { get; set; } = ',';
 
         public CSVWriter(string folder, string fileName)
@@ -40,11 +37,11 @@ namespace SpectrumAnalyzer.Models
         }
         public void WriteMetaData(string title, string value)
         {
-            WriteLine(new string[] { title, value });
+            WriteLine([title, value]);
         }
         public void WriteDataStartLine()
         {
-            WriteLine(new string[] { "#### DATA STARTS HERE ####" });
+            WriteLine(["#### DATA STARTS HERE ####"]);
         }
     }
 }

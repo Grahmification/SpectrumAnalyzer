@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Markup;
 
@@ -12,7 +11,7 @@ namespace SpectrumAnalyzer.Converters
     public abstract class BaseValueConverter<T> : MarkupExtension, IValueConverter
         where T : class, new()
     {
-        private static T mConverter = null; //a static single instance of this value converter
+        private static T? mConverter = null; //a static single instance of this value converter
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {

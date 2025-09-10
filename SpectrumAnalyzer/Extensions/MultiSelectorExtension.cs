@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.Collections.Specialized;
-using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -64,13 +61,13 @@ namespace SpectrumAnalyzer.Extensions
 
         private sealed class SelectedItemsBinder : IDisposable
         {
-            private static readonly IList emptyList = new object[0];
+            private static readonly IList emptyList = Array.Empty<object>();
 
-            private static readonly Action<MultiSelector> multiSelectorBeginUpdateSelectedItems, multiSelectorEndUpdateSelectedItems;
+            private static readonly Action<MultiSelector>? multiSelectorBeginUpdateSelectedItems, multiSelectorEndUpdateSelectedItems;
 
             private readonly MultiSelector multiSelector;
-            private IList selectedItems;
-            private IResetter selectedItemsResetter;
+            private IList selectedItems = Array.Empty<object>();
+            private IResetter? selectedItemsResetter;
 
             private bool suspendMultiSelectorUpdate, suspendSelectedItemsUpdate;
 
@@ -101,7 +98,7 @@ namespace SpectrumAnalyzer.Extensions
                         this.OnSelectedItemsCollectionChanged(this.selectedItems, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                     else
                     {
-                        RoutedEventHandler multiSelectorLoadedHandler = null;
+                        RoutedEventHandler? multiSelectorLoadedHandler = null;
                         this.multiSelector.Loaded += multiSelectorLoadedHandler = new RoutedEventHandler((sender, e) =>
                         {
                             this.OnSelectedItemsCollectionChanged(this.selectedItems, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
@@ -128,7 +125,7 @@ namespace SpectrumAnalyzer.Extensions
                 this.SetSelectedItemsChangedHandler(false);
             }
 
-            private void OnSelectedItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+            private void OnSelectedItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
             {
                 if (this.suspendMultiSelectorUpdate || e.Action == NotifyCollectionChangedAction.Move)
                     return;
@@ -143,7 +140,7 @@ namespace SpectrumAnalyzer.Extensions
                     UpdateList(this.multiSelector.SelectedItems, e.NewItems ?? emptyList, e.OldItems ?? emptyList);
                 else
                 {
-                    if (multiSelectorBeginUpdateSelectedItems != null)
+                    if (multiSelectorBeginUpdateSelectedItems != null && multiSelectorEndUpdateSelectedItems != null)
                     {
                         multiSelectorBeginUpdateSelectedItems(this.multiSelector);
                         this.multiSelector.SelectedItems.Clear();
@@ -207,7 +204,7 @@ namespace SpectrumAnalyzer.Extensions
                     var index = list.IndexOf(oldItems[i]);
                     if (index >= 0)
                     {
-                        object newItem;
+                        object? newItem;
                         if (i < newItems.Count && (newItem = newItems[i]) != CollectionView.NewItemPlaceholder)
                         {
                             list[index] = newItem;
@@ -226,12 +223,14 @@ namespace SpectrumAnalyzer.Extensions
                 }
             }
 
-            private static void GetMultiSelectorBeginEndUpdateSelectedItems(out Action<MultiSelector> beginUpdateSelectedItems, out Action<MultiSelector> endUpdateSelectedItems)
+            private static void GetMultiSelectorBeginEndUpdateSelectedItems(out Action<MultiSelector>? beginUpdateSelectedItems, out Action<MultiSelector>? endUpdateSelectedItems)
             {
                 try
                 {
-                    beginUpdateSelectedItems = (Action<MultiSelector>)Delegate.CreateDelegate(typeof(Action<MultiSelector>), typeof(MultiSelector).GetMethod("BeginUpdateSelectedItems", BindingFlags.NonPublic | BindingFlags.Instance));
-                    endUpdateSelectedItems = (Action<MultiSelector>)Delegate.CreateDelegate(typeof(Action<MultiSelector>), typeof(MultiSelector).GetMethod("EndUpdateSelectedItems", BindingFlags.NonPublic | BindingFlags.Instance));
+                    #pragma warning disable CS8604 // Possible null reference argument. We'll catch this error anyways
+                    beginUpdateSelectedItems = (Action<MultiSelector>?)Delegate.CreateDelegate(typeof(Action<MultiSelector>), typeof(MultiSelector).GetMethod("BeginUpdateSelectedItems", BindingFlags.NonPublic | BindingFlags.Instance));
+                    endUpdateSelectedItems = (Action<MultiSelector>?)Delegate.CreateDelegate(typeof(Action<MultiSelector>), typeof(MultiSelector).GetMethod("EndUpdateSelectedItems", BindingFlags.NonPublic | BindingFlags.Instance));
+                    #pragma warning restore CS8604 // Possible null reference argument.
                 }
                 catch
                 {
@@ -239,12 +238,12 @@ namespace SpectrumAnalyzer.Extensions
                 }
             }
 
-            private static IResetter GetResetter(Type listType)
+            private static IResetter? GetResetter(Type listType)
             {
                 try
                 {
-                    MethodInfo genericReset = null, nonGenericReset = null;
-                    Type genericResetItemType = null;
+                    MethodInfo? genericReset = null, nonGenericReset = null;
+                    Type? genericResetItemType = null;
                     foreach (var method in listType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
                     {
                         if (method.Name != "Reset")
@@ -270,10 +269,10 @@ namespace SpectrumAnalyzer.Extensions
                             nonGenericReset = method;
                     }
 
-                    if (genericReset != null)
-                        return (IResetter)Activator.CreateInstance(typeof(GenericResetter<,>).MakeGenericType(genericReset.DeclaringType, genericResetItemType), genericReset);
-                    else if (nonGenericReset != null)
-                        return (IResetter)Activator.CreateInstance(typeof(NonGenericResetter<>).MakeGenericType(nonGenericReset.DeclaringType), nonGenericReset);
+                    if (genericReset != null && genericReset.DeclaringType != null && genericResetItemType != null)
+                        return (IResetter?)Activator.CreateInstance(typeof(GenericResetter<,>).MakeGenericType(genericReset.DeclaringType, genericResetItemType), genericReset);
+                    else if (nonGenericReset != null && nonGenericReset.DeclaringType != null)
+                        return (IResetter?)Activator.CreateInstance(typeof(NonGenericResetter<>).MakeGenericType(nonGenericReset.DeclaringType), nonGenericReset);
                     else
                         return null;
                 }

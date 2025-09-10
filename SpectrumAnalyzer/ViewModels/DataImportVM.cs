@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using SpectrumAnalyzer.Models;
@@ -11,11 +7,9 @@ namespace SpectrumAnalyzer.ViewModels
 {
     public class DataImportVM : ObservableObject
     {
-
-
-        public SpreadSheet SpreadSheet { get; private set; }
+        public SpreadSheet? SpreadSheet { get; private set; }
         public string SelectedSheetName { get; set; } = "";
-        public DataTable SelectedSheet
+        public DataTable? SelectedSheet
         {
             get
             {
@@ -25,18 +19,18 @@ namespace SpectrumAnalyzer.ViewModels
                 return SpreadSheet.WorkSheets.ContainsKey(SelectedSheetName) ? SpreadSheet?.WorkSheets[SelectedSheetName] : null;
             }
         }
-        public double[] SelectedXData { get { return GetDataColumnList(SelectedSheet, XDataColumn - 1); } }
-        public double[] SelectedYData { get { return GetDataColumnList(SelectedSheet, YDataColumn - 1); } }
+        public double[] SelectedXData { get { return SelectedSheet != null ? GetDataColumnList(SelectedSheet, XDataColumn - 1) : Array.Empty<double>(); } }
+        public double[] SelectedYData { get { return SelectedSheet != null ? GetDataColumnList(SelectedSheet, YDataColumn - 1) : Array.Empty<double>(); } }
 
 
         public bool MultipleSheetsExist { get { return SpreadSheet?.WorkSheets.Count() > 1; } }
         public bool DataHeaders { get; set; } = true;
         public int XDataColumn { get; set; } = 1;
         public int YDataColumn { get; set; } = 2;
-        public int ImportRows { get { return (SpreadSheet != null) ? (DataHeaders ? SelectedSheet.Rows.Count - 1 : SelectedSheet.Rows.Count) : 0; } }
+        public int ImportRows { get { return (SelectedSheet != null) ? (DataHeaders ? SelectedSheet.Rows.Count - 1 : SelectedSheet.Rows.Count) : 0; } }
 
 
-        public event EventHandler ImportDataRequest;
+        public event EventHandler? ImportDataRequest;
 
         /// <summary>
         /// RelayCommand for <see cref="ImportData"/>
@@ -52,7 +46,7 @@ namespace SpectrumAnalyzer.ViewModels
         public DataImportVM(SpreadSheet spreadsheet)
         {          
             SpreadSheet = spreadsheet;
-            SelectedSheetName = SpreadSheet.WorkSheetNames.FirstOrDefault();
+            SelectedSheetName = SpreadSheet.WorkSheetNames.FirstOrDefault() ?? "";
 
             SetupObjects();
         }
@@ -102,8 +96,18 @@ namespace SpectrumAnalyzer.ViewModels
                     if (i == 0 && DataHeaders)
                         continue;
 
-                    //parsing because type can either be double or string depending on if excel or csv
-                    tmp.Add(double.Parse(table.Rows[i].Field<object>(column).ToString()));
+                    var value = table.Rows[i].Field<object>(column);
+
+                    if (value != null && value != DBNull.Value)
+                    {
+                        //parsing because type can either be double or string depending on if excel or csv
+                        tmp.Add(double.Parse(value.ToString() ?? "0"));
+                    }
+                    else
+                    {
+                        // Handle missing/invalid data:
+                        tmp.Add(0);
+                    }
                 }
             }
            

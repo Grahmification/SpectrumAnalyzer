@@ -1,5 +1,4 @@
 ﻿using MathNet.Numerics;
-using System;
 
 namespace SpectrumAnalyzer.Models
 {

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using MathNet.Numerics;
+﻿using MathNet.Numerics;
 using MathNet.Numerics.IntegralTransforms;
 
 namespace SpectrumAnalyzer.Models
