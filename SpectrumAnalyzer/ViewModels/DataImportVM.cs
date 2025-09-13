@@ -43,7 +43,9 @@ namespace SpectrumAnalyzer.ViewModels
         public ICommand CloseWindowCommand { get; private set; }
 
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public DataImportVM(SpreadSheet spreadsheet)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {          
             SpreadSheet = spreadsheet;
             SelectedSheetName = SpreadSheet.WorkSheetNames.FirstOrDefault() ?? "";
@@ -51,7 +53,9 @@ namespace SpectrumAnalyzer.ViewModels
             SetupObjects();
         }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public DataImportVM()
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
             SetupObjects();
         }

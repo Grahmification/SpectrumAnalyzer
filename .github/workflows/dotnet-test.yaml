@@ -1,0 +1,35 @@
+#----------------------------------------------------------------------------------------------
+#
+# This github action builds and tests a dot-net application.
+# The action will run when pushing to a development branch.
+#
+#----------------------------------------------------------------------------------------------
+name: .NET CI
+
+on:
+  push:
+    branches-ignore:
+      - main   # don't run on main
+    tags-ignore:
+      - '**'   # ignore all tags
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'   # Adjust for your project
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test --configuration Release --no-build --verbosity normal

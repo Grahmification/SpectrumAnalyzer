@@ -1,0 +1,108 @@
+#----------------------------------------------------------------------------------------------
+#
+# This github action builds, tests, and optionally publishes a .net application.
+# An application will only be published when pushing a version tag (ex. v1.0.1)
+#
+# This workflow requires the following github secrets:
+# - secrets.WINDOWS_CERT_BASE64 - A certificate .pfx file, encoded in base64 format
+# - secrets.WINDOWS_CERT_PASSWORD - The password for the .pfx file, as specified on file creation
+#
+# The following also must be adjusted:
+# - The dot-net version
+# - The publish project .csproj name
+# - The zip file name
+# - The build artifact name
+#
+#----------------------------------------------------------------------------------------------
+
+name: Build, Test, and Release App
+
+on:
+  push:
+    tags: [ 'v*.*.*' ] # e.g. v1.0.0
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: write   # Gives the secrets.GITHUB_TOKEN write access, needed for publishing
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'  # Adjust version as needed
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test --configuration Release --no-build --verbosity normal
+
+      # ------------------------------------------
+      # Only publish and upload when pushing a version tag
+      #-------------------------------------------
+      - name: Publish
+        if: startsWith(github.ref, 'refs/tags/')
+        run: dotnet publish SpectrumAnalyzer/SpectrumAnalyzer.csproj -c Release -r win-x64 --self-contained false -o publish  # Adjust project as needed
+
+      - name: Decode signing certificate  # Certificate contents must be base 64 encoded and uploaded as a github secret
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          echo "${{ secrets.WINDOWS_CERT_BASE64 }}" > cert.base64
+          certutil -decode cert.base64 cert.pfx
+        shell: pwsh
+
+      - name: Sign executables  # Certificant password must be uploaded as a github secret
+        if: startsWith(github.ref, 'refs/tags/')
+        run: | # Dynamically finds the signtool exe, ignoring the arm version
+          $certPath = "cert.pfx"
+          $password = "${{ secrets.WINDOWS_CERT_PASSWORD }}"
+          $signtool = (Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter signtool.exe |
+                      Where-Object { $_.FullName -match "\\x64\\" } |
+                      Sort-Object FullName -Descending |
+                      Select-Object -First 1).FullName
+          
+          if (-not (Test-Path $signtool)) {
+            throw "signtool.exe (x64) not found!"
+          }
+          
+          Write-Host "Using signtool at $signtool"
+          
+          $files = Get-ChildItem publish -Include *.exe,*.msi -Recurse
+          foreach ($f in $files) {
+            & $signtool sign `
+              /f $certPath /p $password /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 `
+              "$($f.FullName)"
+          }
+        shell: pwsh
+
+      - name: Zip published output  # Zipped file is named based on tags (version), adjust base name as needed
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          $tag = "${{ github.ref_name }}"
+          Compress-Archive -Path publish\* -DestinationPath "SpectrumAnalyzer-$tag.zip"
+
+      - name: Upload Build Artifact
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v4
+        with:
+          name: SpectrumAnalyzer  # Adjust for project name
+          path: SpectrumAnalyzer-${{ github.ref_name }}.zip  # Must match zipped filename
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: SpectrumAnalyzer-${{ github.ref_name }}.zip  # Must match zipped filename
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
