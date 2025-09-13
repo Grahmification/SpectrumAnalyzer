@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 
 namespace SpectrumAnalyzer.Models
 {
@@ -14,6 +15,10 @@ namespace SpectrumAnalyzer.Models
             
             foreach (Datapoint p in dataset)
                 Items.Add(p);
+
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(Count)));
+            OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(Items)));
         }
         public void XValueOperation(Func<double, double> operation)
         {
