@@ -1,4 +1,5 @@
 ﻿using System.Collections.Specialized;
+using System.Windows;
 using Microsoft.Win32;
 using OxyPlot;
 using OxyPlot.Series;
@@ -139,38 +140,45 @@ namespace SpectrumAnalyzer.ViewModels
         {
             if (recon != null)
             {
-                var fd = new SaveFileDialog()
+                try
                 {
-                    Filter = "CSV File (*.csv)|*.csv|All files (*.*)|*.*",
-                    CheckPathExists = true,
-                    Title = "Export Data",
-                    AddExtension = true,
-                    FileName = FormatExportFileName("Signal Components", recon)
-                };
+                    var fd = new SaveFileDialog()
+                    {
+                        Filter = "CSV File (*.csv)|*.csv|All files (*.*)|*.*",
+                        CheckPathExists = true,
+                        Title = "Export Data",
+                        AddExtension = true,
+                        FileName = FormatExportFileName("Signal Components", recon)
+                    };
 
-                if (fd.ShowDialog() == true && recon != null)
+                    if (fd.ShowDialog() == true && recon != null)
+                    {
+                        var writer = new CSVWriter(fd.FileName);
+
+                        writer.WriteLine(new string[] { "FFT Signal Reconstruction Components Data" });
+
+                        writer.WriteMetaData("Input Data Path", Data.DataFilePath);
+                        writer.WriteMetaData("Input Data Size", FFT.Dataset.Count.ToString());
+                        writer.WriteMetaData("Input Data Time Units", Units.SelectedXUnit.TimeString);
+                        writer.WriteMetaData("Input Data Frequency Units", Units.SelectedXUnit.FreqString);
+                        writer.WriteMetaData("Input Data Y Axis Units", Units.YAxisTitle);
+                        writer.WriteMetaData("Input Data Detrending?", Data.PolyFit.Enabled.ToString());
+                        writer.WriteMetaData("Detrending Poly Coefficients [x^0...x^n]", Data.PolyFit.PolyCoefsString);
+                        writer.WriteMetaData("Reconstruction Name", recon.Name);
+                        writer.WriteMetaData("Total FFT Components", FFT.SignalComponents.Count.ToString());
+                        writer.WriteMetaData("Reconstruction Components", recon.Function.Curves.Count.ToString());
+
+                        writer.WriteDataStartLine();
+                        writer.WriteLine(SignalComponent.GetExportHeader(Units.SelectedXUnit.FreqUnit, Units.SelectedXUnit.TimeUnit, Units.YAxisTitle));
+                        foreach (SignalComponent comp in recon.Function.Curves)
+                            writer.WriteLine(comp.GetExportDataLine());
+
+                        writer.Close();
+                    }
+                }
+                catch (Exception ex)
                 {
-                    var writer = new CSVWriter(fd.FileName);
-
-                    writer.WriteLine(new string[] { "FFT Signal Reconstruction Components Data" });
-
-                    writer.WriteMetaData("Input Data Path", Data.DataFilePath);
-                    writer.WriteMetaData("Input Data Size", FFT.Dataset.Count.ToString());
-                    writer.WriteMetaData("Input Data Time Units", Units.SelectedXUnit.TimeString);
-                    writer.WriteMetaData("Input Data Frequency Units", Units.SelectedXUnit.FreqString);
-                    writer.WriteMetaData("Input Data Y Axis Units", Units.YAxisTitle);
-                    writer.WriteMetaData("Input Data Detrending?", Data.PolyFit.Enabled.ToString());
-                    writer.WriteMetaData("Detrending Poly Coefficients [x^0...x^n]", Data.PolyFit.PolyCoefsString);
-                    writer.WriteMetaData("Reconstruction Name", recon.Name);
-                    writer.WriteMetaData("Total FFT Components", FFT.SignalComponents.Count.ToString());
-                    writer.WriteMetaData("Reconstruction Components", recon.Function.Curves.Count.ToString());
-
-                    writer.WriteDataStartLine();
-                    writer.WriteLine(SignalComponent.GetExportHeader(Units.SelectedXUnit.FreqUnit, Units.SelectedXUnit.TimeUnit, Units.YAxisTitle));
-                    foreach (SignalComponent comp in recon.Function.Curves)
-                        writer.WriteLine(comp.GetExportDataLine());
-
-                    writer.Close();
+                    MessageBox.Show($"Could not export reconstruction. An Error Occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
         }
@@ -178,78 +186,85 @@ namespace SpectrumAnalyzer.ViewModels
         {
             if (recon != null)
             {
-                var fd = new SaveFileDialog()
+                try
                 {
-                    Filter = "CSV File (*.csv)|*.csv|All files (*.*)|*.*",
-                    CheckPathExists = true,
-                    Title = "Export Data",
-                    AddExtension = true,
-                    FileName = FormatExportFileName("Data Points", recon)
-                };
-
-                if (fd.ShowDialog() == true && recon != null)
-                {
-                    var writer = new CSVWriter(fd.FileName);
-
-                    writer.WriteLine(new string[] { "FFT Signal Reconstruction Data Points" });
-
-                    writer.WriteMetaData("Input Data Path", Data.DataFilePath);
-                    writer.WriteMetaData("Input Data Size", FFT.Dataset.Count.ToString());
-                    writer.WriteMetaData("Input Data Time Units", Units.SelectedXUnit.TimeString);
-                    writer.WriteMetaData("Input Data Frequency Units", Units.SelectedXUnit.FreqString);
-                    writer.WriteMetaData("Input Data Y Axis Units", Units.YAxisTitle);
-                    writer.WriteMetaData("Input Data Detrending?", Data.PolyFit.Enabled.ToString());
-                    writer.WriteMetaData("Detrending Poly Coefficients [x^0...x^n]", Data.PolyFit.PolyCoefsString);
-                    writer.WriteMetaData("Reconstruction Name", recon.Name);
-                    writer.WriteMetaData("Total FFT Components", FFT.SignalComponents.Count.ToString());
-                    writer.WriteMetaData("Reconstruction Components", recon.Function.Curves.Count.ToString());
-
-                    writer.WriteDataStartLine();
-
-                    if (Data.FitEnabled)
+                    var fd = new SaveFileDialog()
                     {
-                        writer.WriteLine(new string[]
-                            {
+                        Filter = "CSV File (*.csv)|*.csv|All files (*.*)|*.*",
+                        CheckPathExists = true,
+                        Title = "Export Data",
+                        AddExtension = true,
+                        FileName = FormatExportFileName("Data Points", recon)
+                    };
+
+                    if (fd.ShowDialog() == true && recon != null)
+                    {
+                        var writer = new CSVWriter(fd.FileName);
+
+                        writer.WriteLine(new string[] { "FFT Signal Reconstruction Data Points" });
+
+                        writer.WriteMetaData("Input Data Path", Data.DataFilePath);
+                        writer.WriteMetaData("Input Data Size", FFT.Dataset.Count.ToString());
+                        writer.WriteMetaData("Input Data Time Units", Units.SelectedXUnit.TimeString);
+                        writer.WriteMetaData("Input Data Frequency Units", Units.SelectedXUnit.FreqString);
+                        writer.WriteMetaData("Input Data Y Axis Units", Units.YAxisTitle);
+                        writer.WriteMetaData("Input Data Detrending?", Data.PolyFit.Enabled.ToString());
+                        writer.WriteMetaData("Detrending Poly Coefficients [x^0...x^n]", Data.PolyFit.PolyCoefsString);
+                        writer.WriteMetaData("Reconstruction Name", recon.Name);
+                        writer.WriteMetaData("Total FFT Components", FFT.SignalComponents.Count.ToString());
+                        writer.WriteMetaData("Reconstruction Components", recon.Function.Curves.Count.ToString());
+
+                        writer.WriteDataStartLine();
+
+                        if (Data.FitEnabled)
+                        {
+                            writer.WriteLine(new string[]
+                                {
                             "#",
                         Units.SelectedXUnit.TimeString,
                         string.Format("Raw Data [{0}]",Units.YAxisTitle),
                         string.Format("Polynomial Detrend Curve [{0}]",Units.YAxisTitle),
                         string.Format("FFT Input Data [{0}]",Units.YAxisTitle),
                         string.Format("Reconstruction Data [{0}]",Units.YAxisTitle),
-                            });
+                                });
 
-                        for (int i = 0; i < recon.NonInterpolatedPoints.Count; i++)
-                            writer.WriteLine(new string[]
-                            {
+                            for (int i = 0; i < recon.NonInterpolatedPoints.Count; i++)
+                                writer.WriteLine(new string[]
+                                {
                         (i+1).ToString(),
                         recon.NonInterpolatedPoints[i].X.ToString(),
                         Data.RawData[i].Y.ToString(),
                         Data.FitCurveData[i].Y.ToString(),
                         Data.NormalizedData[i].Y.ToString(),
                         recon.NonInterpolatedPoints[i].Y.ToString()
-                            });
-                    }
-                    else
-                    {
-                        writer.WriteLine(new string[]
-                           {
+                                });
+                        }
+                        else
+                        {
+                            writer.WriteLine(new string[]
+                               {
                             "#",
                         Units.SelectedXUnit.TimeString,
                         string.Format("FFT Input Data [{0}]",Units.YAxisTitle),
                         string.Format("Reconstruction Data [{0}]",Units.YAxisTitle),
-                           });
+                               });
 
-                        for (int i = 0; i < recon.NonInterpolatedPoints.Count; i++)
-                            writer.WriteLine(new string[]
-                            {
+                            for (int i = 0; i < recon.NonInterpolatedPoints.Count; i++)
+                                writer.WriteLine(new string[]
+                                {
                         (i+1).ToString(),
                         recon.NonInterpolatedPoints[i].X.ToString(),
                         Data.NormalizedData[i].Y.ToString(),
                         recon.NonInterpolatedPoints[i].Y.ToString()
-                            });
-                    }
+                                });
+                        }
 
-                    writer.Close();
+                        writer.Close();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Could not export reconstruction. An Error Occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
         }
@@ -257,51 +272,58 @@ namespace SpectrumAnalyzer.ViewModels
         {
             if (recon != null)
             {
-                var fd = new SaveFileDialog()
+                try
                 {
-                    Filter = "CSV File (*.csv)|*.csv|All files (*.*)|*.*",
-                    CheckPathExists = true,
-                    Title = "Export Data",
-                    AddExtension = true,
-                    FileName = FormatExportFileName("Interpolated Data Points", recon)
-                };
+                    var fd = new SaveFileDialog()
+                    {
+                        Filter = "CSV File (*.csv)|*.csv|All files (*.*)|*.*",
+                        CheckPathExists = true,
+                        Title = "Export Data",
+                        AddExtension = true,
+                        FileName = FormatExportFileName("Interpolated Data Points", recon)
+                    };
 
-                if (fd.ShowDialog() == true && recon != null)
-                {
-                    var writer = new CSVWriter(fd.FileName);
+                    if (fd.ShowDialog() == true && recon != null)
+                    {
+                        var writer = new CSVWriter(fd.FileName);
 
-                    writer.WriteLine(new string[] { "FFT Signal Reconstruction Interpolated Data Points" });
+                        writer.WriteLine(new string[] { "FFT Signal Reconstruction Interpolated Data Points" });
 
-                    writer.WriteMetaData("Input Data Path", Data.DataFilePath);
-                    writer.WriteMetaData("Input Data Size", FFT.Dataset.Count.ToString());
-                    writer.WriteMetaData("Input Data Time Units", Units.SelectedXUnit.TimeString);
-                    writer.WriteMetaData("Input Data Frequency Units", Units.SelectedXUnit.FreqString);
-                    writer.WriteMetaData("Input Data Y Axis Units", Units.YAxisTitle);
-                    writer.WriteMetaData("Input Data Detrending?", Data.PolyFit.Enabled.ToString());
-                    writer.WriteMetaData("Detrending Poly Coefficients [x^0...x^n]", Data.PolyFit.PolyCoefsString);
-                    writer.WriteMetaData("Reconstruction Name", recon.Name);
-                    writer.WriteMetaData("Total FFT Components", FFT.SignalComponents.Count.ToString());
-                    writer.WriteMetaData("Reconstruction Components", recon.Function.Curves.Count.ToString());
-                    writer.WriteMetaData("Interpolation Factor", recon.InterpolationFactor.ToString());
+                        writer.WriteMetaData("Input Data Path", Data.DataFilePath);
+                        writer.WriteMetaData("Input Data Size", FFT.Dataset.Count.ToString());
+                        writer.WriteMetaData("Input Data Time Units", Units.SelectedXUnit.TimeString);
+                        writer.WriteMetaData("Input Data Frequency Units", Units.SelectedXUnit.FreqString);
+                        writer.WriteMetaData("Input Data Y Axis Units", Units.YAxisTitle);
+                        writer.WriteMetaData("Input Data Detrending?", Data.PolyFit.Enabled.ToString());
+                        writer.WriteMetaData("Detrending Poly Coefficients [x^0...x^n]", Data.PolyFit.PolyCoefsString);
+                        writer.WriteMetaData("Reconstruction Name", recon.Name);
+                        writer.WriteMetaData("Total FFT Components", FFT.SignalComponents.Count.ToString());
+                        writer.WriteMetaData("Reconstruction Components", recon.Function.Curves.Count.ToString());
+                        writer.WriteMetaData("Interpolation Factor", recon.InterpolationFactor.ToString());
 
-                    writer.WriteDataStartLine();
+                        writer.WriteDataStartLine();
 
-                    writer.WriteLine(new string[]
-                        {
+                        writer.WriteLine(new string[]
+                            {
                         "#",
                     Units.SelectedXUnit.TimeString,
                     string.Format("Reconstruction Data [{0}]",Units.YAxisTitle),
-                        });
+                            });
 
-                    for (int i = 0; i < recon.Points.Count; i++)
-                        writer.WriteLine(new string[]
-                        {
+                        for (int i = 0; i < recon.Points.Count; i++)
+                            writer.WriteLine(new string[]
+                            {
                     (i+1).ToString(),
                     recon.Points[i].X.ToString(),
                     recon.Points[i].Y.ToString()
-                        });
+                            });
 
-                    writer.Close();
+                        writer.Close();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Could not export reconstruction. An Error Occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
         }

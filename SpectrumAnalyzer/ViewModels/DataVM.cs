@@ -1,4 +1,5 @@
 ﻿using SpectrumAnalyzer.Models;
+using System.Windows;
 using System.Windows.Input;
 
 namespace SpectrumAnalyzer.ViewModels
@@ -64,7 +65,9 @@ namespace SpectrumAnalyzer.ViewModels
         }
         public void ComputeFit(object? parameter)
         {
-            PolyFit.FitToData(RawData.XValues.ToArray(), RawData.YValues.ToArray());
+            try
+            {
+                PolyFit.FitToData(RawData.XValues.ToArray(), RawData.YValues.ToArray());
 
             FitCurve = new CompositeXYFunction();
             FitCurve.Curves.Add(PolyFit.PolyFunction);
@@ -73,17 +76,29 @@ namespace SpectrumAnalyzer.ViewModels
             NormalizedData.SetData(DatapointCollection.YValueMultisetOperation(RawData, FitCurveData, (a, b) => a - b));
 
             FitCompleted?.Invoke(this, new EventArgs());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Could not compute data fit. An Error Occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
         public void ComputeFFT(object? parameter)
         {
-            var FFToutput = FFT.computeFFTComponents(FFTInputData.GetFFTDataFormat());
+            try
+            {
+                var FFToutput = FFT.computeFFTComponents(FFTInputData.GetFFTDataFormat());
 
-            FFTData.Clear();
+                FFTData.Clear();
 
-            foreach (SignalComponent component in FFToutput)
-                FFTData.Add(component.Frequency, component);
+                foreach (SignalComponent component in FFToutput)
+                    FFTData.Add(component.Frequency, component);
 
-            FFTCompleted?.Invoke(this, new EventArgs());
+                FFTCompleted?.Invoke(this, new EventArgs());
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show($"Could not compute FFT. An Error Occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
         public bool DataExists()
         {

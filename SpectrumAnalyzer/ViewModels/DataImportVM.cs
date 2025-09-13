@@ -68,8 +68,15 @@ namespace SpectrumAnalyzer.ViewModels
 
         public void ImportData(Window parameter)
         {
-            ImportDataRequest?.Invoke(this, new EventArgs());
-            CloseWindow(parameter);
+            try
+            {
+                ImportDataRequest?.Invoke(this, new EventArgs());
+                CloseWindow(parameter);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Could not import the dataset. An Error Occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
         public void CloseWindow(Window parameter)

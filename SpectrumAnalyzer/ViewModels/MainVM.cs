@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System.Windows;
+using System.Windows.Input;
 using Microsoft.Win32;
 using SpectrumAnalyzer.Models;
 
@@ -22,23 +23,30 @@ namespace SpectrumAnalyzer.ViewModels
 
         public void LoadData(object parameter)
         {
-            var fd = new OpenFileDialog()
+            try
             {
-                Filter = "Excel files (*.xlsx)|*.xlsx|csv files (*.csv)|*.csv|All files (*.*)|*.*",
-                Multiselect = true,
-                CheckPathExists = true,
-                Title = "Load Dataset",
-                AddExtension = true
-            };
+                var fd = new OpenFileDialog()
+                {
+                    Filter = "Excel files (*.xlsx)|*.xlsx|csv files (*.csv)|*.csv|All files (*.*)|*.*",
+                    Multiselect = true,
+                    CheckPathExists = true,
+                    Title = "Load Dataset",
+                    AddExtension = true
+                };
 
-            if (fd.ShowDialog() == true)
+                if (fd.ShowDialog() == true)
+                {
+                    var vm = new DataImportVM(new SpreadSheet(fd.FileName));
+                    vm.ImportDataRequest += OnImportData;
+
+                    var importWindow = new DataImportWindow();
+                    importWindow.DataContext = vm;
+                    importWindow.Show();
+                }
+            }
+            catch (Exception ex)
             {
-                var vm = new DataImportVM(new SpreadSheet(fd.FileName));
-                vm.ImportDataRequest += OnImportData;
-
-                var importWindow = new DataImportWindow();
-                importWindow.DataContext = vm;
-                importWindow.Show();
+                MessageBox.Show($"Could not open the file. An Error Occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 

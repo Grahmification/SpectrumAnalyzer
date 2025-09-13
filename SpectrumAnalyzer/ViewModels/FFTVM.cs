@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Windows;
 using System.Windows.Input;
 using OxyPlot;
 using OxyPlot.Series;
@@ -267,27 +268,34 @@ namespace SpectrumAnalyzer.ViewModels
 
         public void AddReconstruction(object? parameter)
         {
-            var recon = new SignalReconstructionVM(NewReconstructionName);
-            recon.InterpolationFactor = PreviewReconstruction.InterpolationFactor;
-            recon.PopulateComponents(new List<SignalComponent>(SelectedComponents));
-            recon.PopulatePoints((List<double>)Dataset.XValues);
-
-            Reconstructions.Add(recon);
-            NewReconstructionName = string.Format("Reconstruction {0}", Reconstructions.Count + 1);
-
-            //plot the reconstruction
-            var fitLineSeries = new LineSeries()
+            try
             {
-                LineStyle = LineStyle.Solid,
-                MarkerType = MarkerType.None,
-                CanTrackerInterpolatePoints = true,
-                ItemsSource = recon.Points,
-                Title = recon.Name,
-            };
+                var recon = new SignalReconstructionVM(NewReconstructionName);
+                recon.InterpolationFactor = PreviewReconstruction.InterpolationFactor;
+                recon.PopulateComponents(new List<SignalComponent>(SelectedComponents));
+                recon.PopulatePoints((List<double>)Dataset.XValues);
 
-            ReconstructionPlot.Model.AddSeries(fitLineSeries, (PlotSeriesTag)(Reconstructions.Count + 200));
-            ReconstructionPlot.Model.SetSeriesVisibility((PlotSeriesTag)(Reconstructions.Count + 200), true);
-            ReconstructionPlot.Model.InvalidatePlot(true);
+                Reconstructions.Add(recon);
+                NewReconstructionName = string.Format("Reconstruction {0}", Reconstructions.Count + 1);
+
+                //plot the reconstruction
+                var fitLineSeries = new LineSeries()
+                {
+                    LineStyle = LineStyle.Solid,
+                    MarkerType = MarkerType.None,
+                    CanTrackerInterpolatePoints = true,
+                    ItemsSource = recon.Points,
+                    Title = recon.Name,
+                };
+
+                ReconstructionPlot.Model.AddSeries(fitLineSeries, (PlotSeriesTag)(Reconstructions.Count + 200));
+                ReconstructionPlot.Model.SetSeriesVisibility((PlotSeriesTag)(Reconstructions.Count + 200), true);
+                ReconstructionPlot.Model.InvalidatePlot(true);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Could not add reconstruction. An Error Occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
         public void DeleteReconstruction(object? parameter)
         {
@@ -329,11 +337,19 @@ namespace SpectrumAnalyzer.ViewModels
 
         public void ExportAllComponents(object? parameter)
         {
-            var recon = new SignalReconstructionVM("Full Spectrum");
-            recon.PopulateComponents(SignalComponents);
-            recon.PopulatePoints((List<double>)Dataset.XValues);
+            try
+            {
+                var recon = new SignalReconstructionVM("Full Spectrum");
+                recon.PopulateComponents(SignalComponents);
+                recon.PopulatePoints((List<double>)Dataset.XValues);
 
-            ExportReconstructionComponentsRequest?.Invoke(this, recon);
+                ExportReconstructionComponentsRequest?.Invoke(this, recon);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Could not export components. An Error Occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+
         }
 
         private void OnSignalComponentsSelected(object? sender, NotifyCollectionChangedEventArgs e)
