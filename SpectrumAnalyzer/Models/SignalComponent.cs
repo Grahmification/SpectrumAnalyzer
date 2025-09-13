@@ -31,7 +31,7 @@
             Index = index;
 
             //if the imaginary component is 0 this signal is the DC offset
-            if (imaginary == 0)
+            if (imaginary == 0 && freqency == 0)
             {
                 DCOffset = true;
                 Frequency = 0;
