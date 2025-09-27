@@ -26,10 +26,13 @@ jobs:
           dotnet-version: '8.0.x'   # Adjust for your project
 
       - name: Restore dependencies
+        working-directory: Source
         run: dotnet restore
 
       - name: Build
+        working-directory: Source
         run: dotnet build --configuration Release --no-restore
 
-      - name: Run tests
+      - name: Run tests 
+        working-directory: Source
         run: dotnet test --configuration Release --no-build --verbosity normal
