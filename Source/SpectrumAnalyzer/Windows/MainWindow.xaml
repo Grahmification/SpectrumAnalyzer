@@ -19,14 +19,13 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- ==================== Menu bar ==================== -->
         <Menu Grid.Row="0">
-            <MenuItem Header="_Project">
+            <MenuItem Header="_File">
                 <MenuItem Header="_New Project"
                           Command="{Binding Project.NewProjectCommand}"
                           InputGestureText="Ctrl+N"/>
@@ -41,15 +40,12 @@
                           Command="{Binding Project.SaveProjectAsCommand}"
                           InputGestureText="Ctrl+Shift+S"/>
             </MenuItem>
+            <MenuItem Header="_Load Dataset" Command="{Binding LoadDataCommand}">
+            </MenuItem>
         </Menu>
 
-        <!-- ==================== Toolbar ==================== -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Background="LightGray">
-            <Button Content="Load Dataset" Command="{Binding LoadDataCommand}" Margin="2"/>
-        </StackPanel>
-
         <!-- ==================== Tab content ==================== -->
-        <TabControl Grid.Row="2" TabStripPlacement="Top">
+        <TabControl Grid.Row="1" TabStripPlacement="Top">
             <TabItem Header="Data Configuration">
                 <UserControls:DataControl DataContext="{Binding Data}"/>
             </TabItem>
@@ -59,7 +55,7 @@
         </TabControl>
 
         <!-- ==================== Status bar ==================== -->
-        <StackPanel Grid.Row="3" Orientation="Horizontal" Background="LightGray">
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Background="LightGray">
             <TextBlock Margin="5,2,5,2" VerticalAlignment="Center"
                        Text="{Binding Data.Data.DataFilePath}"/>
         </StackPanel>
