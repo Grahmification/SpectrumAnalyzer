@@ -54,7 +54,6 @@ namespace SpectrumAnalyzer.Services
                 Frequency        = c.Frequency,
                 RealComponent    = c.RealComponent,
                 ImaginaryComponent = c.ImaginaryComponent,
-                DatasetSize      = dataPlotVM.Data.FFTInputData.Count
             })];
 
             // ---- reconstructions ----
@@ -117,6 +116,8 @@ namespace SpectrumAnalyzer.Services
             dataPlotVM.SetData(xData, yData, project.DataTitle);
 
             // ---- FFT components ----
+            int datasetSize = (project.SignalComponents.Count + 1) * 2;
+
             if (project.SignalComponents.Count == 0)
                 return;
 
@@ -126,7 +127,7 @@ namespace SpectrumAnalyzer.Services
                     sc.RealComponent,
                     sc.ImaginaryComponent,
                     sc.Index,
-                    sc.DatasetSize))
+                    datasetSize))
                 .ToList();
 
             // Re-compute contribution fractions & unwrap phases (same as computeFFTComponents)

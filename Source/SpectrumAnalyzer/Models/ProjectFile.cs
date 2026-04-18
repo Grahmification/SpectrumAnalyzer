@@ -45,7 +45,6 @@ namespace SpectrumAnalyzer.Models
         public double Frequency { get; set; }
         public double RealComponent { get; set; }
         public double ImaginaryComponent { get; set; }
-        public int DatasetSize { get; set; }
     }
 
     public class ReconstructionData
