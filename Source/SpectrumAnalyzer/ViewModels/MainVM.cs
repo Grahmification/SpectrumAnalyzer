@@ -10,21 +10,12 @@ namespace SpectrumAnalyzer.ViewModels
         public DataPlotVM Data { get; private set; }
         public ProjectVM Project { get; private set; }
 
-        public string WindowTitle => Project.WindowTitle;
-
         public ICommand LoadDataCommand { get; private set; }
 
         public MainVM()
         {
             Data    = new DataPlotVM();
             Project = new ProjectVM(() => Data);
-
-            // Propagate title changes up so the Window binding updates
-            Project.PropertyChanged += (_, e) =>
-            {
-                if (e.PropertyName == nameof(ProjectVM.WindowTitle))
-                    OnPropertyChanged(nameof(WindowTitle));
-            };
 
             // Mark project dirty whenever data state changes
             Data.StateChanged += (_, _) => Project.MarkDirty();
@@ -43,7 +34,6 @@ namespace SpectrumAnalyzer.ViewModels
 
             // Update ProjectVM's reference via its factory func (already a closure)
             OnPropertyChanged(nameof(Data));
-            OnPropertyChanged(nameof(WindowTitle));
         }
 
         public void LoadData(object parameter)

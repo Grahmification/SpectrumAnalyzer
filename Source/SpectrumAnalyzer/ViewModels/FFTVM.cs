@@ -37,7 +37,7 @@ namespace SpectrumAnalyzer.ViewModels
 
         public FFTVM()
         {
-            AddReconstructionCommand = new RelayCommand<object>(AddReconstruction, AllowNewReconstruction);
+            AddReconstructionCommand = new RelayCommand<object>(AddReconstructionFromUI, AllowNewReconstruction);
             DeleteReconstructionCommand = new RelayCommand<object>(DeleteReconstruction, AreReconstructionsSelected);
             ExportReconstructionComponentsCommand = new RelayCommand<object>(s => ExportReconstructionComponentsRequest?.Invoke(this, SelectedReconstruction), AreReconstructionsSelected);
             ExportReconstructionPointsCommand = new RelayCommand<object>(s => ExportReconstructionPointsRequest?.Invoke(this, SelectedReconstruction), AreReconstructionsSelected);
@@ -51,43 +51,6 @@ namespace SpectrumAnalyzer.ViewModels
             SetupPlots();
         }
 
-        // -----------------------------------------------------------------------
-        // Project load – adds a reconstruction without requiring UI selection
-        // -----------------------------------------------------------------------
-        public void AddReconstructionFromLoad(string name, int interpolationFactor, List<SignalComponent> components)
-        {
-            try
-            {
-                var recon = new SignalReconstructionVM(name);
-                recon.InterpolationFactor = interpolationFactor;
-                recon.PopulateComponents(components);
-                recon.PopulatePoints((List<double>)Dataset.XValues);
-
-                Reconstructions.Add(recon);
-                NewReconstructionName = string.Format("Reconstruction {0}", Reconstructions.Count + 1);
-
-                var fitLineSeries = new LineSeries()
-                {
-                    LineStyle = LineStyle.Solid,
-                    MarkerType = MarkerType.None,
-                    CanTrackerInterpolatePoints = true,
-                    ItemsSource = recon.Points,
-                    Title = recon.Name,
-                };
-
-                ReconstructionPlot.Model.AddSeries(fitLineSeries, (PlotSeriesTag)(Reconstructions.Count + 200));
-                ReconstructionPlot.Model.SetSeriesVisibility((PlotSeriesTag)(Reconstructions.Count + 200), true);
-                ReconstructionPlot.Model.InvalidatePlot(true);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Could not load reconstruction '{name}'. An Error Occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-
-        // -----------------------------------------------------------------------
-        // Everything below is unchanged from the original FFTVM
-        // -----------------------------------------------------------------------
         public void SetupPlots()
         {
             FrequencySpectrumPlot.Model.Axes.Add(PlotModelManaged.AxisYSecondaryData());
@@ -285,13 +248,26 @@ namespace SpectrumAnalyzer.ViewModels
             PeriodSpectrumPlot.Model.InvalidatePlot(true);
         }
 
-        public void AddReconstruction(object? parameter)
+        public void AddReconstructionFromUI(object? parameter)
+        {
+            AddReconstruction(NewReconstructionName, PreviewReconstruction.InterpolationFactor, [.. SelectedComponents]);
+        }
+
+        /// <summary>
+        /// Adds a new reconstruction to the list of reconstructions, plotting it
+        /// </summary>
+        /// <param name="name">Name of the reconstruction</param>
+        /// <param name="interpolationFactor">Interpolation factor of the reconstruction</param>
+        /// <param name="components">Components in the reconstruction</param>
+        public void AddReconstruction(string name, int interpolationFactor, List<SignalComponent> components)
         {
             try
             {
-                var recon = new SignalReconstructionVM(NewReconstructionName);
-                recon.InterpolationFactor = PreviewReconstruction.InterpolationFactor;
-                recon.PopulateComponents(new List<SignalComponent>(SelectedComponents));
+                var recon = new SignalReconstructionVM(name)
+                {
+                    InterpolationFactor = interpolationFactor
+                };
+                recon.PopulateComponents(components);
                 recon.PopulatePoints((List<double>)Dataset.XValues);
 
                 Reconstructions.Add(recon);

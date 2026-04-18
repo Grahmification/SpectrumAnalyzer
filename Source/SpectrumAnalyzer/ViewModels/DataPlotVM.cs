@@ -80,9 +80,12 @@ namespace SpectrumAnalyzer.ViewModels
             DataPlot.Model.AddSeries(dataHightlightSeries,    PlotSeriesTag.SelectedSeries);
         }
 
-        // -----------------------------------------------------------------------
-        // Normal data-import path
-        // -----------------------------------------------------------------------
+        /// <summary>
+        /// The primary data import path within the application
+        /// </summary>
+        /// <param name="XData">X-axis data</param>
+        /// <param name="YData">Y-axis data</param>
+        /// <param name="dataTitle">Title of the data</param>
         public void SetData(double[] XData, double[] YData, string dataTitle)
         {
             Data.SetData(XData, YData);
@@ -99,42 +102,7 @@ namespace SpectrumAnalyzer.ViewModels
         }
 
         // -----------------------------------------------------------------------
-        // Project-load helpers
-        // -----------------------------------------------------------------------
-
-        /// <summary>
-        /// Called by ProjectFileService after raw data and poly-fit have been
-        /// loaded so the plot series become visible and axes reset.
-        /// </summary>
-        public void RefreshAfterLoad()
-        {
-            DataPlot.Model.SetSeriesVisibility(PlotSeriesTag.RawData, true);
-            DataPlot.ResetZoom(null);
-            onEnableDataFitChanged(this, Data.FitEnabled);
-            Units.UpdateUnits(null);
-        }
-
-        /// <summary>
-        /// Called by ProjectFileService after FFT data has been injected via
-        /// <see cref="DataVM.LoadFFTDirect"/>.  Mirrors the normal onFFTCompleted
-        /// path but without re-creating the FFTVM (so the caller can still
-        /// populate reconstructions afterwards).
-        /// </summary>
-        public void OnFFTCompletedFromLoad()
-        {
-            // Rebuild the FFTVM the same way onFFTCompleted does.
-            FFT = new FFTVM();
-            FFT.ExportReconstructionComponentsRequest    += onExportReconstructionComponents;
-            FFT.ExportReconstructionPointsRequest        += onExportReconstructionPoints;
-            FFT.ExportReconstructionInterpolatedPointsRequest += onExportReconstructionInterpolatedPoints;
-
-            FFT.PopulateComponents(Data.FFTData.Values);
-            FFT.PopulateDataSet(Data.FFTInputData);
-            FFT.SetUnits(Units);
-        }
-
-        // -----------------------------------------------------------------------
-        // Standard event handlers (unchanged)
+        // Event handlers
         // -----------------------------------------------------------------------
         public void onFitCompleted(object? sender, EventArgs e)
         {
@@ -178,7 +146,7 @@ namespace SpectrumAnalyzer.ViewModels
         }
 
         // -----------------------------------------------------------------------
-        // Export handlers (unchanged)
+        // Export handlers
         // -----------------------------------------------------------------------
         public void onExportReconstructionComponents(object? sender, SignalReconstructionVM? recon)
         {

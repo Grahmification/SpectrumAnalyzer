@@ -1,4 +1,3 @@
-using System;
 using System.Windows;
 using System.Windows.Input;
 using Microsoft.Win32;
@@ -6,6 +5,9 @@ using SpectrumAnalyzer.Services;
 
 namespace SpectrumAnalyzer.ViewModels
 {
+    /// <summary>
+    /// Viewmodel for managing a project
+    /// </summary>
     public class ProjectVM : ObservableObject
     {
         private const string FileFilter = "Spectrum Analyzer Project (*.saproj)|*.saproj|All files (*.*)|*.*";
@@ -32,6 +34,7 @@ namespace SpectrumAnalyzer.ViewModels
         public bool HasUnsavedChanges { get; private set; } = false;
 
         // The owning DataPlotVM – set once at construction time by MainVM.
+        // This is a function since the VM may be destroyed and re-initialized.
         private readonly Func<DataPlotVM> _getDataPlotVM;
 
         // Raises when the entire data model should be reset (New Project).
@@ -52,10 +55,10 @@ namespace SpectrumAnalyzer.ViewModels
             SaveProjectAsCommand = new RelayCommand<object>(_ => SaveProjectAs());
         }
 
-        // -----------------------------------------------------------------------
-        // Called by the VM layer whenever something changes (data loaded, FFT run,
-        // reconstruction added, etc.) so the title can show unsaved state.
-        // -----------------------------------------------------------------------
+        /// <summary>
+        /// Called by the VM layer whenever something changes (data loaded, FFT run,
+        /// reconstruction added, etc.) so the title can show unsaved state.
+        /// </summary>
         public void MarkDirty()
         {
             HasUnsavedChanges = true;

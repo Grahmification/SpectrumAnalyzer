@@ -1,6 +1,4 @@
-using System;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using SpectrumAnalyzer.Models;
@@ -8,6 +6,9 @@ using SpectrumAnalyzer.ViewModels;
 
 namespace SpectrumAnalyzer.Services
 {
+    /// <summary>
+    /// Service to save and load the project data file
+    /// </summary>
     public static class ProjectFileService
     {
         private static readonly JsonSerializerOptions _jsonOptions = new()
@@ -16,17 +17,20 @@ namespace SpectrumAnalyzer.Services
             DefaultIgnoreCondition = JsonIgnoreCondition.Never
         };
 
-        // -----------------------------------------------------------------------
-        // Save
-        // -----------------------------------------------------------------------
+        /// <summary>
+        /// Save the project data file
+        /// </summary>
+        /// <param name="filePath">The save filepath</param>
+        /// <param name="dataPlotVM">The current program data to save</param>
         public static void Save(string filePath, DataPlotVM dataPlotVM)
         {
-            var project = new ProjectFile();
-
-            // ---- source / units ----
-            project.DataFilePath = dataPlotVM.Data.DataFilePath;
-            project.DataTitle    = dataPlotVM.Units.DataTitle;
-            project.YAxisTitle   = dataPlotVM.Units.YAxisTitle;
+            var project = new ProjectFile
+            {
+                // ---- source / units ----
+                DataFilePath = dataPlotVM.Data.DataFilePath,
+                DataTitle = dataPlotVM.Units.DataTitle,
+                YAxisTitle = dataPlotVM.Units.YAxisTitle
+            };
 
             var xu = dataPlotVM.Units.SelectedXUnit;
             project.XUnitTimeDescription = xu.TimeDescription;
@@ -36,11 +40,7 @@ namespace SpectrumAnalyzer.Services
             project.XUnitFreqPrimary     = xu.FreqPrimary;
 
             // ---- raw data ----
-            // We save the zero-normalised data that is actually in memory (same as
-            // what would be re-imported), so round-trip is lossless.
-            project.RawData = dataPlotVM.Data.RawData
-                .Select(p => new DatapointData { X = p.X, Y = p.Y })
-                .ToList();
+            project.RawData = [.. dataPlotVM.Data.RawData.Select(p => new DatapointData { X = p.X, Y = p.Y })];
 
             // ---- poly fit ----
             project.PolyFitEnabled = dataPlotVM.Data.PolyFit.Enabled;
@@ -48,16 +48,14 @@ namespace SpectrumAnalyzer.Services
 
             // ---- FFT components ----
             var components = dataPlotVM.FFT.SignalComponents.ToList();
-            project.SignalComponents = components.Select(c => new SignalComponentData
+            project.SignalComponents = [.. components.Select(c => new SignalComponentData
             {
                 Index            = c.Index,
                 Frequency        = c.Frequency,
                 RealComponent    = c.RealComponent,
                 ImaginaryComponent = c.ImaginaryComponent,
-                // Back-calculate dataset size from magnitude formula so we can
-                // reconstruct the SignalComponent object faithfully.
-                DatasetSize      = ReconstructDatasetSize(c)
-            }).ToList();
+                DatasetSize      = dataPlotVM.Data.FFTInputData.Count
+            })];
 
             // ---- reconstructions ----
             project.Reconstructions = dataPlotVM.FFT.Reconstructions.Select(r =>
@@ -80,9 +78,12 @@ namespace SpectrumAnalyzer.Services
             File.WriteAllText(filePath, json);
         }
 
-        // -----------------------------------------------------------------------
-        // Load  –  returns a populated DataPlotVM ready to be used by MainVM
-        // -----------------------------------------------------------------------
+        /// <summary>
+        /// Load the project file into the code
+        /// </summary>
+        /// <param name="filePath">Path to the existing project file</param>
+        /// <param name="dataPlotVM">Viewmodel to populate with project data</param>
+        /// <exception cref="InvalidDataException"></exception>
         public static void Load(string filePath, DataPlotVM dataPlotVM)
         {
             var json    = File.ReadAllText(filePath);
@@ -104,25 +105,16 @@ namespace SpectrumAnalyzer.Services
             dataPlotVM.Units.DataTitle     = project.DataTitle;
             dataPlotVM.Units.YAxisTitle    = project.YAxisTitle;
 
-            // ---- raw data ----
-            double[] xData = project.RawData.Select(p => p.X).ToArray();
-            double[] yData = project.RawData.Select(p => p.Y).ToArray();
-
-            // SetData zero-normalises; our saved data is already zero-normalised,
-            // so we bypass SetData and populate directly to avoid double-shifting.
-            dataPlotVM.Data.LoadRawDataDirect(xData, yData, project.DataFilePath);
-
             // ---- poly fit settings ----
             dataPlotVM.Data.PolyFit.PolyFitOrder = project.PolyFitOrder;
-
-            if (project.PolyFitEnabled || dataPlotVM.Data.RawData.Count > 0)
-            {
-                dataPlotVM.Data.ComputeFit(null);
-            }
             dataPlotVM.Data.PolyFit.Enabled = project.PolyFitEnabled;
 
-            // ---- notify plot ----
-            dataPlotVM.RefreshAfterLoad();
+            // ---- raw data ----
+            double[] xData = [.. project.RawData.Select(p => p.X)];
+            double[] yData = [.. project.RawData.Select(p => p.Y)];
+            
+            // Set afrer applying fit settings, as this computes the fit
+            dataPlotVM.SetData(xData, yData, project.DataTitle);
 
             // ---- FFT components ----
             if (project.SignalComponents.Count == 0)
@@ -143,12 +135,9 @@ namespace SpectrumAnalyzer.Services
                 signalComponents[i].SetContributionFraction(magnitudeSum);
             SignalComponent.UnwrapPhases(signalComponents);
 
-            // Build the same dictionary DataVM uses
-            var fftDict = signalComponents.ToDictionary(c => c.Frequency, c => c);
-            dataPlotVM.Data.LoadFFTDirect(fftDict);
-
-            // This triggers the same FFTVM population path as a normal FFT compute
-            dataPlotVM.OnFFTCompletedFromLoad();
+            // Set the FFT output data
+            // This will fire the FFT completed event, which populates other things
+            dataPlotVM.Data.SetFFTData(signalComponents);
 
             // ---- reconstructions ----
             var loadedComponents = dataPlotVM.FFT.SignalComponents.ToList();
@@ -159,35 +148,8 @@ namespace SpectrumAnalyzer.Services
                     .Select(i => loadedComponents[i])
                     .ToList();
 
-                dataPlotVM.FFT.AddReconstructionFromLoad(rd.Name, rd.InterpolationFactor, selectedComponents);
+                dataPlotVM.FFT.AddReconstruction(rd.Name, rd.InterpolationFactor, selectedComponents);
             }
-        }
-
-        // -----------------------------------------------------------------------
-        // Helpers
-        // -----------------------------------------------------------------------
-
-        /// <summary>
-        /// Reverse-engineers the dataset size from a SignalComponent's stored
-        /// magnitude so the component can be reconstructed identically.
-        /// For DC offsets: datasetSize = real / magnitude.
-        /// For others: datasetSize = sqrt(real²+imag²)*2 / magnitude.
-        /// We store it explicitly now, but keep this for older files.
-        /// </summary>
-        private static int ReconstructDatasetSize(SignalComponent c)
-        {
-            // We now save DatasetSize directly, so this is only a fallback.
-            // The SignalComponent doesn't expose DatasetSize publicly, so we
-            // must recalculate.  For DC: mag = real/n  =>  n = real/mag.
-            // For AC: mag = sqrt(r²+i²)*2/n  =>  n = sqrt(r²+i²)*2/mag.
-            if (c.Magnitude == 0) return 1;
-
-            if (c.DCOffset)
-                return (int)Math.Round(c.RealComponent / c.Magnitude);
-
-            double raw = Math.Sqrt(c.RealComponent * c.RealComponent +
-                                   c.ImaginaryComponent * c.ImaginaryComponent);
-            return (int)Math.Round(raw * 2.0 / c.Magnitude);
         }
     }
 }

@@ -7,7 +7,7 @@
         xmlns:vm="clr-namespace:SpectrumAnalyzer.ViewModels"
         xmlns:UserControls="clr-namespace:SpectrumAnalyzer.UserControls"
         mc:Ignorable="d"
-        Title="{Binding WindowTitle}"
+        Title="{Binding Project.WindowTitle}"
         Height="450" Width="800"
         WindowStyle="SingleBorderWindow"
         WindowState="Maximized">

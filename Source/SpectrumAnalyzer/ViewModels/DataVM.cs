@@ -37,48 +37,28 @@ namespace SpectrumAnalyzer.ViewModels
             ComputeFitCommand = new RelayCommand<object>(ComputeFit, DataExists);
         }
 
-        // -----------------------------------------------------------------------
-        // Normal import path (from file dialog) – zero-normalises X values
-        // -----------------------------------------------------------------------
-        public void SetData(double[] XData, double[] YData)
+        /// <summary>
+        /// Primary data import path
+        /// </summary>
+        /// <param name="xData">X Data (time or length)</param>
+        /// <param name="yData">Y Data (to use for FFT)</param>
+        public void SetData(double[] xData, double[] yData)
         {
             RawData.Clear();
             var dataPoints = new List<Datapoint>();
 
-            for (int i = 0; i < XData.Length; i++)
-                dataPoints.Add(new Datapoint(XData[i], YData[i]));
-
-            RawData.SetData(dataPoints);
-            RawData.ZeroNormalizeXValues();
-
-            NotifyFrequencyProperties();
-        }
-
-        // -----------------------------------------------------------------------
-        // Project-load path – data is already zero-normalised; skip the shift
-        // -----------------------------------------------------------------------
-        public void LoadRawDataDirect(double[] xData, double[] yData, string dataFilePath)
-        {
-            DataFilePath = dataFilePath;
-
-            var dataPoints = new List<Datapoint>();
             for (int i = 0; i < xData.Length; i++)
                 dataPoints.Add(new Datapoint(xData[i], yData[i]));
 
             RawData.SetData(dataPoints);
-            NotifyFrequencyProperties();
+            RawData.ZeroNormalizeXValues();
+
+            OnPropertyChanged("MinFrequency");
+            OnPropertyChanged("MaxFrequency");
+            OnPropertyChanged("MinPeriod");
+            OnPropertyChanged("MaxPeriod");
         }
 
-        // -----------------------------------------------------------------------
-        // Loads pre-computed FFT results directly (from project file)
-        // -----------------------------------------------------------------------
-        public void LoadFFTDirect(Dictionary<double, SignalComponent> fftData)
-        {
-            FFTData = fftData;
-            FFTCompleted?.Invoke(this, EventArgs.Empty);
-        }
-
-        // -----------------------------------------------------------------------
         public void ComputeFit(object? parameter)
         {
             try
@@ -103,29 +83,30 @@ namespace SpectrumAnalyzer.ViewModels
             try
             {
                 var FFToutput = FFT.computeFFTComponents(FFTInputData.GetFFTDataFormat());
-
-                FFTData.Clear();
-                foreach (SignalComponent component in FFToutput)
-                    FFTData.Add(component.Frequency, component);
-
-                FFTCompleted?.Invoke(this, EventArgs.Empty);
+                SetFFTData(FFToutput);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Could not compute FFT. An Error Occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+
+        /// <summary>
+        /// Sets the FFT data within the VM
+        /// </summary>
+        /// <param name="components">The result of the FFT</param>
+        public void SetFFTData(List<SignalComponent> components)
+        {
+            FFTData.Clear();
+            foreach (SignalComponent component in components)
+                FFTData.Add(component.Frequency, component);
+
+            FFTCompleted?.Invoke(this, EventArgs.Empty);
+        }
+
         public bool DataExists()
         {
             return RawData.Count > 0;
-        }
-
-        private void NotifyFrequencyProperties()
-        {
-            OnPropertyChanged("MinFrequency");
-            OnPropertyChanged("MaxFrequency");
-            OnPropertyChanged("MinPeriod");
-            OnPropertyChanged("MaxPeriod");
         }
     }
 }
