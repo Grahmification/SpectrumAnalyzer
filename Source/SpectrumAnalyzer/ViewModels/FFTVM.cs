@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Input;
@@ -25,9 +25,7 @@ namespace SpectrumAnalyzer.ViewModels
         public UnitsVM Units { get; private set; } = new UnitsVM();
 
         public event EventHandler<SignalReconstructionVM?>? ExportReconstructionComponentsRequest;
-
         public event EventHandler<SignalReconstructionVM?>? ExportReconstructionPointsRequest;
-        
         public event EventHandler<SignalReconstructionVM?>? ExportReconstructionInterpolatedPointsRequest;
 
         public ICommand AddReconstructionCommand { get; private set; }
@@ -44,7 +42,7 @@ namespace SpectrumAnalyzer.ViewModels
             ExportReconstructionComponentsCommand = new RelayCommand<object>(s => ExportReconstructionComponentsRequest?.Invoke(this, SelectedReconstruction), AreReconstructionsSelected);
             ExportReconstructionPointsCommand = new RelayCommand<object>(s => ExportReconstructionPointsRequest?.Invoke(this, SelectedReconstruction), AreReconstructionsSelected);
             ExportReconstructionInterpolatedPointsCommand = new RelayCommand<object>(s => ExportReconstructionInterpolatedPointsRequest?.Invoke(this, SelectedReconstruction), AreReconstructionsSelected);
-            ExportAllComponentsCommand = new RelayCommand<object>(ExportAllComponents, ()=> SignalComponents.Count >0);
+            ExportAllComponentsCommand = new RelayCommand<object>(ExportAllComponents, () => SignalComponents.Count > 0);
 
             SelectedComponents.CollectionChanged += OnSignalComponentsSelected;
 
@@ -52,10 +50,46 @@ namespace SpectrumAnalyzer.ViewModels
 
             SetupPlots();
         }
+
+        // -----------------------------------------------------------------------
+        // Project load – adds a reconstruction without requiring UI selection
+        // -----------------------------------------------------------------------
+        public void AddReconstructionFromLoad(string name, int interpolationFactor, List<SignalComponent> components)
+        {
+            try
+            {
+                var recon = new SignalReconstructionVM(name);
+                recon.InterpolationFactor = interpolationFactor;
+                recon.PopulateComponents(components);
+                recon.PopulatePoints((List<double>)Dataset.XValues);
+
+                Reconstructions.Add(recon);
+                NewReconstructionName = string.Format("Reconstruction {0}", Reconstructions.Count + 1);
+
+                var fitLineSeries = new LineSeries()
+                {
+                    LineStyle = LineStyle.Solid,
+                    MarkerType = MarkerType.None,
+                    CanTrackerInterpolatePoints = true,
+                    ItemsSource = recon.Points,
+                    Title = recon.Name,
+                };
+
+                ReconstructionPlot.Model.AddSeries(fitLineSeries, (PlotSeriesTag)(Reconstructions.Count + 200));
+                ReconstructionPlot.Model.SetSeriesVisibility((PlotSeriesTag)(Reconstructions.Count + 200), true);
+                ReconstructionPlot.Model.InvalidatePlot(true);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Could not load reconstruction '{name}'. An Error Occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        // -----------------------------------------------------------------------
+        // Everything below is unchanged from the original FFTVM
+        // -----------------------------------------------------------------------
         public void SetupPlots()
         {
-            //-------------------- Frequency Plot --------------------------
-
             FrequencySpectrumPlot.Model.Axes.Add(PlotModelManaged.AxisYSecondaryData());
             FrequencySpectrumPlot.TitlePrefix = "FFT Frequency Spectrum";
             FrequencySpectrumPlot.AxisTitlePrimaryX = "Frequency";
@@ -72,9 +106,8 @@ namespace SpectrumAnalyzer.ViewModels
                 CanTrackerInterpolatePoints = false,
                 ItemsSource = SignalComponents,
                 DataFieldX = "Frequency",
-                DataFieldY = "Magnitude",                
+                DataFieldY = "Magnitude",
             };
-
             var FFTFreqPhase = new LineSeries()
             {
                 LineStyle = LineStyle.Solid,
@@ -87,7 +120,6 @@ namespace SpectrumAnalyzer.ViewModels
                 DataFieldX = "Frequency",
                 DataFieldY = "Phase"
             };
-
             var FFTFreqMagnitudeHightlight = new LineSeries()
             {
                 LineStyle = LineStyle.None,
@@ -101,7 +133,6 @@ namespace SpectrumAnalyzer.ViewModels
                 DataFieldX = "Frequency",
                 DataFieldY = "Magnitude",
             };
-
             var FFTFreqPhaseHightlight = new LineSeries()
             {
                 LineStyle = LineStyle.None,
@@ -121,10 +152,7 @@ namespace SpectrumAnalyzer.ViewModels
             FrequencySpectrumPlot.Model.AddSeries(FFTFreqPhase, (PlotSeriesTag)7);
             FrequencySpectrumPlot.Model.AddSeries(FFTFreqPhaseHightlight, (PlotSeriesTag)8);
 
-            //-------------------- Period Plot --------------------------
-
             PeriodSpectrumPlot.Model.Axes.Add(PlotModelManaged.AxisYSecondaryData());
-
             PeriodSpectrumPlot.TitlePrefix = "FFT Period Spectrum";
             PeriodSpectrumPlot.AxisTitlePrimaryX = "Period";
             PeriodSpectrumPlot.AxisTitlePrimaryY = "Magnitude";
@@ -139,7 +167,6 @@ namespace SpectrumAnalyzer.ViewModels
                 YAxisKey = "Primary Y",
                 CanTrackerInterpolatePoints = false,
             };
-
             var FFTPeriodPhase = new LineSeries()
             {
                 LineStyle = LineStyle.Solid,
@@ -149,7 +176,6 @@ namespace SpectrumAnalyzer.ViewModels
                 YAxisKey = "Secondary Y",
                 CanTrackerInterpolatePoints = false,
             };
-
             var FFTPeriodMagnitudeHightlight = new LineSeries()
             {
                 LineStyle = LineStyle.None,
@@ -163,7 +189,6 @@ namespace SpectrumAnalyzer.ViewModels
                 DataFieldX = "Period",
                 DataFieldY = "Magnitude"
             };
-
             var FFTPeriodPhaseHightlight = new LineSeries()
             {
                 LineStyle = LineStyle.None,
@@ -183,8 +208,6 @@ namespace SpectrumAnalyzer.ViewModels
             PeriodSpectrumPlot.Model.AddSeries(FFTPeriodPhase, (PlotSeriesTag)7);
             PeriodSpectrumPlot.Model.AddSeries(FFTPeriodPhaseHightlight, (PlotSeriesTag)8);
 
-            //-------------------- Reconstruction Plot --------------------------
-
             ReconstructionPlot.TitlePrefix = "Signal Reconstruction";
 
             var DataSeries = new LineSeries()
@@ -196,7 +219,6 @@ namespace SpectrumAnalyzer.ViewModels
                 CanTrackerInterpolatePoints = false,
                 ItemsSource = Dataset
             };
-
             var fitLineSeries = new LineSeries()
             {
                 LineStyle = LineStyle.Solid,
@@ -205,39 +227,37 @@ namespace SpectrumAnalyzer.ViewModels
                 Title = PreviewReconstruction.Name,
                 CanTrackerInterpolatePoints = true,
                 ItemsSource = PreviewReconstruction.Points
-        };
+            };
 
             ReconstructionPlot.Model.AddSeries(DataSeries, PlotSeriesTag.RawData);
             ReconstructionPlot.Model.AddSeries(fitLineSeries, PlotSeriesTag.FitLine);
         }
+
         public void SetUnits(UnitsVM units)
         {
             Units = units;
             Units.OnUnitsUpdate += OnUnitsUpdate;
             OnUnitsUpdate(this, new EventArgs());
         }
+
         public void PopulateDataSet(IEnumerable<Datapoint> dataset)
         {
             Dataset.Clear();
-
             foreach (Datapoint point in dataset)
-            {
                 Dataset.Add(point);
-            }
 
             ReconstructionPlot.Model.SetSeriesVisibility(PlotSeriesTag.RawData, true);
             ReconstructionPlot.ResetZoom(null);
             ReconstructionPlot.Model.InvalidatePlot(true);
         }
+
         public void PopulateComponents(IEnumerable<SignalComponent> components)
         {
             SelectedComponents.Clear();
             SignalComponents.Clear();
 
             foreach (SignalComponent component in components)
-            {
                 SignalComponents.Add(component);
-            }
 
             var periodLine = (LineSeries)PeriodSpectrumPlot.Model.PlotSeries[PlotSeriesTag.FFTSpectrumPeriod];
             periodLine.Points.Clear();
@@ -245,10 +265,9 @@ namespace SpectrumAnalyzer.ViewModels
             var periodPhaseLine = (LineSeries)PeriodSpectrumPlot.Model.PlotSeries[(PlotSeriesTag)7];
             periodPhaseLine.Points.Clear();
 
-            //must do this way because we cant plot the dc offset as being huge
             foreach (SignalComponent component in components)
             {
-                if(component.Period != 0)
+                if (component.Period != 0)
                 {
                     periodLine.Points.Add(new DataPoint(component.Period, component.Magnitude));
                     periodPhaseLine.Points.Add(new DataPoint(component.Period, component.Phase));
@@ -278,7 +297,6 @@ namespace SpectrumAnalyzer.ViewModels
                 Reconstructions.Add(recon);
                 NewReconstructionName = string.Format("Reconstruction {0}", Reconstructions.Count + 1);
 
-                //plot the reconstruction
                 var fitLineSeries = new LineSeries()
                 {
                     LineStyle = LineStyle.Solid,
@@ -297,6 +315,7 @@ namespace SpectrumAnalyzer.ViewModels
                 MessageBox.Show($"Could not add reconstruction. An Error Occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+
         public void DeleteReconstruction(object? parameter)
         {
             var recon = SelectedReconstruction;
@@ -312,14 +331,9 @@ namespace SpectrumAnalyzer.ViewModels
                 ReconstructionPlot.Model.InvalidatePlot(true);
             }
         }
-        public bool AreSignalComponentsSelected()
-        {
-            return SelectedComponents.Count > 0;
-        }
-        public bool AreReconstructionsSelected()
-        {
-            return SelectedReconstruction != null;
-        }
+
+        public bool AreSignalComponentsSelected() => SelectedComponents.Count > 0;
+        public bool AreReconstructionsSelected() => SelectedReconstruction != null;
         public bool NewReconstructionNameUnique()
         {
             for (int i = 0; i < Reconstructions.Count; i++)
@@ -327,13 +341,9 @@ namespace SpectrumAnalyzer.ViewModels
                 if (Reconstructions[i].Name == NewReconstructionName)
                     return false;
             }
-
             return true;
         }
-        public bool AllowNewReconstruction()
-        {
-            return AreSignalComponentsSelected() && NewReconstructionNameUnique();
-        }
+        public bool AllowNewReconstruction() => AreSignalComponentsSelected() && NewReconstructionNameUnique();
 
         public void ExportAllComponents(object? parameter)
         {
@@ -342,41 +352,36 @@ namespace SpectrumAnalyzer.ViewModels
                 var recon = new SignalReconstructionVM("Full Spectrum");
                 recon.PopulateComponents(SignalComponents);
                 recon.PopulatePoints((List<double>)Dataset.XValues);
-
                 ExportReconstructionComponentsRequest?.Invoke(this, recon);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Could not export components. An Error Occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
-
         }
 
         private void OnSignalComponentsSelected(object? sender, NotifyCollectionChangedEventArgs e)
         {
             bool selected = false;
-            
+
             if (SelectedComponents.Count > 0)
             {
                 selected = true;
-
-                //------------ Plot Reconstruction From Selected Components ---------------------
                 PreviewReconstruction.PopulateComponents(SelectedComponents);
                 PreviewReconstruction.PopulatePoints((List<double>)Dataset.XValues);
             }
 
             FrequencySpectrumPlot.Model.SetSeriesVisibility(PlotSeriesTag.FFTSpectrumHighlight, selected);
             FrequencySpectrumPlot.Model.SetSeriesVisibility((PlotSeriesTag)8, selected);
-
             PeriodSpectrumPlot.Model.SetSeriesVisibility(PlotSeriesTag.FFTSpectrumHighlight, selected);
             PeriodSpectrumPlot.Model.SetSeriesVisibility((PlotSeriesTag)8, selected);
-
             ReconstructionPlot.Model.SetSeriesVisibility(PlotSeriesTag.FitLine, selected);
 
             FrequencySpectrumPlot.Model.InvalidatePlot(true);
             PeriodSpectrumPlot.Model.InvalidatePlot(true);
             ReconstructionPlot.Model.InvalidatePlot(true);
         }
+
         public void OnUnitsUpdate(object? sender, EventArgs e)
         {
             FrequencySpectrumPlot.TitleSuffix = Units.DataTitle;
@@ -389,6 +394,5 @@ namespace SpectrumAnalyzer.ViewModels
             ReconstructionPlot.AxisTitlePrimaryX = Units.XAxisTitle;
             ReconstructionPlot.AxisTitlePrimaryY = Units.YAxisTitle;
         }
-
     }
 }

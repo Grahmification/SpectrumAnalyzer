@@ -1,4 +1,4 @@
-﻿using SpectrumAnalyzer.Models;
+using SpectrumAnalyzer.Models;
 using System.Windows;
 using System.Windows.Input;
 
@@ -14,7 +14,7 @@ namespace SpectrumAnalyzer.ViewModels
         public DatapointCollection NormalizedData { get; private set; } = [];
         public DatapointCollection FFTInputData => FitEnabled ? NormalizedData : RawData;
 
-        public bool FitEnabled => PolyFit.Enabled; //will need to or multiple of these if more fit types in the future
+        public bool FitEnabled => PolyFit.Enabled;
         public CompositeXYFunction FitCurve { get; private set; } = new CompositeXYFunction();
         public PolyFitVM PolyFit { get; private set; } = new PolyFitVM();
 
@@ -28,14 +28,7 @@ namespace SpectrumAnalyzer.ViewModels
         public event EventHandler? FitCompleted;
         public event EventHandler? FFTCompleted;
 
-        /// <summary>
-        /// RelayCommand for <see cref="ComputeFFT"/>
-        /// </summary>
         public ICommand ComputeFFTCommand { get; private set; }
-
-        /// <summary>
-        /// RelayCommand for <see cref="ComputeFit"/>
-        /// </summary>
         public ICommand ComputeFitCommand { get; private set; }
 
         public DataVM()
@@ -44,38 +37,61 @@ namespace SpectrumAnalyzer.ViewModels
             ComputeFitCommand = new RelayCommand<object>(ComputeFit, DataExists);
         }
 
+        // -----------------------------------------------------------------------
+        // Normal import path (from file dialog) – zero-normalises X values
+        // -----------------------------------------------------------------------
         public void SetData(double[] XData, double[] YData)
         {
             RawData.Clear();
             var dataPoints = new List<Datapoint>();
-            
-            for (int i = 0; i < XData.Length; i++)
-            {
-                dataPoints.Add(new Datapoint(XData[i], YData[i]));
-            }
 
-            // Set data at once to avoid raising a bunch of CollectionChanged events
+            for (int i = 0; i < XData.Length; i++)
+                dataPoints.Add(new Datapoint(XData[i], YData[i]));
+
             RawData.SetData(dataPoints);
             RawData.ZeroNormalizeXValues();
 
-            OnPropertyChanged("MinFrequency");
-            OnPropertyChanged("MaxFrequency");
-            OnPropertyChanged("MinPeriod");
-            OnPropertyChanged("MaxPeriod");
+            NotifyFrequencyProperties();
         }
+
+        // -----------------------------------------------------------------------
+        // Project-load path – data is already zero-normalised; skip the shift
+        // -----------------------------------------------------------------------
+        public void LoadRawDataDirect(double[] xData, double[] yData, string dataFilePath)
+        {
+            DataFilePath = dataFilePath;
+
+            var dataPoints = new List<Datapoint>();
+            for (int i = 0; i < xData.Length; i++)
+                dataPoints.Add(new Datapoint(xData[i], yData[i]));
+
+            RawData.SetData(dataPoints);
+            NotifyFrequencyProperties();
+        }
+
+        // -----------------------------------------------------------------------
+        // Loads pre-computed FFT results directly (from project file)
+        // -----------------------------------------------------------------------
+        public void LoadFFTDirect(Dictionary<double, SignalComponent> fftData)
+        {
+            FFTData = fftData;
+            FFTCompleted?.Invoke(this, EventArgs.Empty);
+        }
+
+        // -----------------------------------------------------------------------
         public void ComputeFit(object? parameter)
         {
             try
             {
                 PolyFit.FitToData(RawData.XValues.ToArray(), RawData.YValues.ToArray());
 
-            FitCurve = new CompositeXYFunction();
-            FitCurve.Curves.Add(PolyFit.PolyFunction);
-            
-            FitCurveData.SetData(FitCurve.ComputeFunction(RawData));
-            NormalizedData.SetData(DatapointCollection.YValueMultisetOperation(RawData, FitCurveData, (a, b) => a - b));
+                FitCurve = new CompositeXYFunction();
+                FitCurve.Curves.Add(PolyFit.PolyFunction);
 
-            FitCompleted?.Invoke(this, new EventArgs());
+                FitCurveData.SetData(FitCurve.ComputeFunction(RawData));
+                NormalizedData.SetData(DatapointCollection.YValueMultisetOperation(RawData, FitCurveData, (a, b) => a - b));
+
+                FitCompleted?.Invoke(this, EventArgs.Empty);
             }
             catch (Exception ex)
             {
@@ -89,13 +105,12 @@ namespace SpectrumAnalyzer.ViewModels
                 var FFToutput = FFT.computeFFTComponents(FFTInputData.GetFFTDataFormat());
 
                 FFTData.Clear();
-
                 foreach (SignalComponent component in FFToutput)
                     FFTData.Add(component.Frequency, component);
 
-                FFTCompleted?.Invoke(this, new EventArgs());
+                FFTCompleted?.Invoke(this, EventArgs.Empty);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show($"Could not compute FFT. An Error Occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
@@ -103,6 +118,14 @@ namespace SpectrumAnalyzer.ViewModels
         public bool DataExists()
         {
             return RawData.Count > 0;
+        }
+
+        private void NotifyFrequencyProperties()
+        {
+            OnPropertyChanged("MinFrequency");
+            OnPropertyChanged("MaxFrequency");
+            OnPropertyChanged("MinPeriod");
+            OnPropertyChanged("MaxPeriod");
         }
     }
 }

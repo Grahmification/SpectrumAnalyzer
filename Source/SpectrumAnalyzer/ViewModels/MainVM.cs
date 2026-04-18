@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Input;
 using Microsoft.Win32;
 using SpectrumAnalyzer.Models;
@@ -6,19 +6,44 @@ using SpectrumAnalyzer.Models;
 namespace SpectrumAnalyzer.ViewModels
 {
     public class MainVM : ObservableObject
-    {     
+    {
         public DataPlotVM Data { get; private set; }
+        public ProjectVM Project { get; private set; }
 
-        /// <summary>
-        /// RelayCommand for <see cref="LoadData"/>
-        /// </summary>
+        public string WindowTitle => Project.WindowTitle;
+
         public ICommand LoadDataCommand { get; private set; }
 
         public MainVM()
         {
-            Data = new DataPlotVM();
+            Data    = new DataPlotVM();
+            Project = new ProjectVM(() => Data);
+
+            // Propagate title changes up so the Window binding updates
+            Project.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(ProjectVM.WindowTitle))
+                    OnPropertyChanged(nameof(WindowTitle));
+            };
+
+            // Mark project dirty whenever data state changes
+            Data.StateChanged += (_, _) => Project.MarkDirty();
+
+            // Handle New Project – reset the entire DataPlotVM
+            Project.NewProjectRequested += OnNewProject;
 
             LoadDataCommand = new RelayCommand<object>(LoadData);
+        }
+
+        private void OnNewProject(object? sender, EventArgs e)
+        {
+            // Replace the DataPlotVM with a fresh one and re-wire events
+            Data = new DataPlotVM();
+            Data.StateChanged += (_, _) => Project.MarkDirty();
+
+            // Update ProjectVM's reference via its factory func (already a closure)
+            OnPropertyChanged(nameof(Data));
+            OnPropertyChanged(nameof(WindowTitle));
         }
 
         public void LoadData(object parameter)
@@ -27,10 +52,10 @@ namespace SpectrumAnalyzer.ViewModels
             {
                 var fd = new OpenFileDialog()
                 {
-                    Filter = "Excel files (*.xlsx)|*.xlsx|csv files (*.csv)|*.csv|All files (*.*)|*.*",
-                    Multiselect = true,
+                    Filter       = "Excel files (*.xlsx)|*.xlsx|csv files (*.csv)|*.csv|All files (*.*)|*.*",
+                    Multiselect  = false,
                     CheckPathExists = true,
-                    Title = "Load Dataset",
+                    Title        = "Load Dataset",
                     AddExtension = true
                 };
 

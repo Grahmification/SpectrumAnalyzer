@@ -27,6 +27,12 @@ namespace SpectrumAnalyzer
 
             var vm = new MainVM();
             this.DataContext = vm;
+
+            // Set keyboard bindings
+            InputBindings.Add(new KeyBinding(vm.Project.NewProjectCommand, Key.N, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(vm.Project.OpenProjectCommand, Key.O, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(vm.Project.SaveProjectCommand, Key.S, ModifierKeys.Control));
+            InputBindings.Add(new KeyBinding(vm.Project.SaveProjectAsCommand, Key.S, ModifierKeys.Control | ModifierKeys.Shift));
         }
     }
 }

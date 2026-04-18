@@ -1,4 +1,4 @@
-﻿<Window x:Class="SpectrumAnalyzer.MainWindow"
+<Window x:Class="SpectrumAnalyzer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -7,7 +7,10 @@
         xmlns:vm="clr-namespace:SpectrumAnalyzer.ViewModels"
         xmlns:UserControls="clr-namespace:SpectrumAnalyzer.UserControls"
         mc:Ignorable="d"
-        Title="Spectrum Analyzer" Height="450" Width="800" WindowStyle="SingleBorderWindow" WindowState="Maximized">
+        Title="{Binding WindowTitle}"
+        Height="450" Width="800"
+        WindowStyle="SingleBorderWindow"
+        WindowState="Maximized">
 
     <Window.DataContext>
         <vm:MainVM/>
@@ -16,15 +19,37 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0"  Orientation="Horizontal" Background="LightGray">
-            <Button Content="Load Dataset" Command="{Binding LoadDataCommand}" Margin="2" />
+        <!-- ==================== Menu bar ==================== -->
+        <Menu Grid.Row="0">
+            <MenuItem Header="_Project">
+                <MenuItem Header="_New Project"
+                          Command="{Binding Project.NewProjectCommand}"
+                          InputGestureText="Ctrl+N"/>
+                <MenuItem Header="_Open Project…"
+                          Command="{Binding Project.OpenProjectCommand}"
+                          InputGestureText="Ctrl+O"/>
+                <Separator/>
+                <MenuItem Header="_Save"
+                          Command="{Binding Project.SaveProjectCommand}"
+                          InputGestureText="Ctrl+S"/>
+                <MenuItem Header="Save _As…"
+                          Command="{Binding Project.SaveProjectAsCommand}"
+                          InputGestureText="Ctrl+Shift+S"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- ==================== Toolbar ==================== -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Background="LightGray">
+            <Button Content="Load Dataset" Command="{Binding LoadDataCommand}" Margin="2"/>
         </StackPanel>
-        
-        <TabControl Grid.Row="1" TabStripPlacement="Top" >
+
+        <!-- ==================== Tab content ==================== -->
+        <TabControl Grid.Row="2" TabStripPlacement="Top">
             <TabItem Header="Data Configuration">
                 <UserControls:DataControl DataContext="{Binding Data}"/>
             </TabItem>
@@ -33,8 +58,10 @@
             </TabItem>
         </TabControl>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Background="LightGray">
-            <TextBlock Margin="5,2,5,2" VerticalAlignment="Center" Text="{Binding Data.Data.DataFilePath}"/>
+        <!-- ==================== Status bar ==================== -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Background="LightGray">
+            <TextBlock Margin="5,2,5,2" VerticalAlignment="Center"
+                       Text="{Binding Data.Data.DataFilePath}"/>
         </StackPanel>
 
     </Grid>
