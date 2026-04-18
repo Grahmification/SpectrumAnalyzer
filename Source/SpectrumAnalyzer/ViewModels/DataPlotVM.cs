@@ -117,6 +117,9 @@ namespace SpectrumAnalyzer.ViewModels
             FFT.ExportReconstructionPointsRequest        += onExportReconstructionPoints;
             FFT.ExportReconstructionInterpolatedPointsRequest += onExportReconstructionInterpolatedPoints;
 
+            // Flag project as dirty when reconstructions change
+            FFT.Reconstructions.CollectionChanged += (_, _) => StateChanged?.Invoke(this, EventArgs.Empty);
+
             FFT.PopulateComponents(Data.FFTData.Values);
             FFT.PopulateDataSet(Data.FFTInputData);
             FFT.SetUnits(Units);
